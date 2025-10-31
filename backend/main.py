@@ -1,12 +1,15 @@
 import os
 import random
+import re
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import List, Optional, Literal
 from stytch import Client
 from stytch.core.response_base import StytchError
+
+from character_generator import CharacterGenerator, CompanyCharacterInfo
 
 # Load environment variables from .env file
 load_dotenv()
@@ -28,6 +31,8 @@ stytch_client = Client(
     secret=os.getenv("STYTCH_SECRET"),
     environment="test",
 )
+
+character_generator = CharacterGenerator()
 
 
 # Authentication dependency
@@ -61,69 +66,9 @@ async def verify_session_token(authorization: Optional[str] = Header(None)) -> d
         raise HTTPException(status_code=500, detail=f"Authentication error: {str(e)}")
 
 
-class Item(BaseModel):
-    id: int
-    name: str
-    description: str
-
-
-class RouletteResult(BaseModel):
-    number: int
-    color: Literal["red", "black", "green"]
-
-
-# In-memory storage (no database)
-items: List[Item] = [
-    Item(id=1, name="Sample Item 1", description="This is a sample item"),
-    Item(id=2, name="Sample Item 2", description="Another sample item"),
-]
-
-
-# Roulette numbers with their colors
-ROULETTE_NUMBERS = [
-    {"number": 0, "color": "green"},
-    {"number": 1, "color": "red"},
-    {"number": 2, "color": "black"},
-    {"number": 3, "color": "red"},
-    {"number": 4, "color": "black"},
-    {"number": 5, "color": "red"},
-    {"number": 6, "color": "black"},
-    {"number": 7, "color": "red"},
-    {"number": 8, "color": "black"},
-    {"number": 9, "color": "red"},
-    {"number": 10, "color": "black"},
-    {"number": 11, "color": "black"},
-    {"number": 12, "color": "red"},
-    {"number": 13, "color": "black"},
-    {"number": 14, "color": "red"},
-    {"number": 15, "color": "black"},
-    {"number": 16, "color": "red"},
-    {"number": 17, "color": "black"},
-    {"number": 18, "color": "red"},
-    {"number": 19, "color": "red"},
-    {"number": 20, "color": "black"},
-    {"number": 21, "color": "red"},
-    {"number": 22, "color": "black"},
-    {"number": 23, "color": "red"},
-    {"number": 24, "color": "black"},
-    {"number": 25, "color": "red"},
-    {"number": 26, "color": "black"},
-    {"number": 27, "color": "red"},
-    {"number": 28, "color": "black"},
-    {"number": 29, "color": "black"},
-    {"number": 30, "color": "red"},
-    {"number": 31, "color": "black"},
-    {"number": 32, "color": "red"},
-    {"number": 33, "color": "black"},
-    {"number": 34, "color": "red"},
-    {"number": 35, "color": "black"},
-    {"number": 36, "color": "red"},
-]
-
-
 @app.get("/")
 async def root():
-    return {"message": "Welcome to Lark Demo API"}
+    return {"message": "Yo :|"}
 
 
 @app.get("/api/health")
@@ -131,37 +76,33 @@ async def health_check():
     return {"status": "healthy"}
 
 
-@app.get("/api/items", response_model=List[Item])
-async def get_items(session: dict = Depends(verify_session_token)):
-    """Get all items (protected route)"""
-    return items
-
-
-@app.get("/api/items/{item_id}", response_model=Item)
-async def get_item(item_id: int, session: dict = Depends(verify_session_token)):
-    """Get a specific item by ID (protected route)"""
-    for item in items:
-        if item.id == item_id:
-            return item
-    raise HTTPException(status_code=404, detail="Item not found")
-
-
-@app.post("/api/items", response_model=Item)
-async def create_item(item: Item, session: dict = Depends(verify_session_token)):
-    """Create a new item (protected route)"""
-    items.append(item)
-    return item
-
-
 @app.post("/api/customers", response_model=str)
 async def create_customer(session: dict = Depends(verify_session_token)):
-    # get stych user id
-    stytch_user_id = session["user_id"]
+    stytch_user_id = session.user.user_id
     return stytch_user_id
 
 
-@app.post("/api/spin", response_model=RouletteResult)
-async def spin_roulette(session: dict = Depends(verify_session_token)):
-    """Spin the roulette wheel and return a random result"""
-    result = random.choice(ROULETTE_NUMBERS)
-    return RouletteResult(**result)
+class CompanyCharacterRequest(BaseModel):
+    company_url: str
+
+    @field_validator("company_url")
+    @classmethod
+    def validate_yc_url(cls, v: str) -> str:
+        """Validate that the URL matches the Y Combinator companies format."""
+        pattern = r"^https://www\.ycombinator\.com/companies/[a-zA-Z0-9\-]+$"
+        if not re.match(pattern, v):
+            raise ValueError(
+                "URL must match the format: https://www.ycombinator.com/companies/{company_name}"
+            )
+        return v
+
+
+@app.post("/api/company_characters", response_model=CompanyCharacterInfo)
+async def generate_company_characters(
+    request: CompanyCharacterRequest, session: dict = Depends(verify_session_token)
+):
+
+    company_characters = character_generator.generate_characters_for_company(
+        request.company_url
+    )
+    return company_characters

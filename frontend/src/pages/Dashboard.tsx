@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useStytch } from "@stytch/react";
-import { CompanyCharacterInfo, fetchCompanyCharacters } from "../api/api";
+import { fetchCompanyCharacters } from "../api/api";
 import { Header } from "../components/Header";
-import { CompanyResult } from "../components/CompanyResult";
-import { sampleFetchCompanyCharactersResponse } from "../api/stubs";
 
 const loadingMessages = [
   "Generating halloween characters (can take upto 30 seconds)...",
@@ -13,12 +12,11 @@ const loadingMessages = [
 ];
 
 export function Dashboard() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
-  const [companyCharacterInfo, setCompanyCharacterInfo] =
-    useState<CompanyCharacterInfo | null>(null);
   const stytchClient = useStytch();
 
   useEffect(() => {
@@ -27,7 +25,7 @@ export function Dashboard() {
         setLoadingMessageIndex(
           (prevIndex) => (prevIndex + 1) % loadingMessages.length
         );
-      }, 5000); // Change message every 4 seconds
+      }, 8000);
 
       return () => clearInterval(interval);
     } else {
@@ -63,7 +61,15 @@ export function Dashboard() {
       // Call the API endpoint
       const data = await fetchCompanyCharacters(query, sessionToken);
       console.log("Company characters response:", data);
-      setCompanyCharacterInfo(data);
+
+      // Generate a random UUID for this generation
+      const generationId = crypto.randomUUID();
+
+      // Store the data in localStorage
+      localStorage.setItem(`generation-${generationId}`, JSON.stringify(data));
+
+      // Navigate to the generation result page
+      navigate(`/generation/${generationId}`);
     } catch (err) {
       console.error("Error fetching company characters:", err);
       setError(
@@ -89,93 +95,76 @@ export function Dashboard() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center px-4">
-        {!companyCharacterInfo && (
-          <div className="w-full max-w-2xl pt-[30vh]">
-            <>
-              <h2 className="text-4xl font-normal text-gray-900 text-center mb-12">
-                Enter a YC company URL
-              </h2>
+        <div className="w-full max-w-2xl pt-[30vh]">
+          <h2 className="text-4xl font-normal text-gray-900 text-center mb-12">
+            Enter a YC company URL
+          </h2>
 
-              {/* Input Container */}
-              <div className="relative">
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  placeholder="https://www.ycombinator.com/companies/lark"
-                  className={`w-full px-6 py-4 pr-16 text-base text-gray-900 placeholder-gray-400 bg-white border rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent ${
-                    error
-                      ? "border-red-300 focus:ring-red-300"
-                      : "border-gray-300 focus:ring-gray-300"
-                  }`}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleSubmit();
-                    }
-                  }}
-                />
+          {/* Input Container */}
+          <div className="relative">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => handleInputChange(e.target.value)}
+              placeholder="https://www.ycombinator.com/companies/lark"
+              className={`w-full px-6 py-4 pr-16 text-base text-gray-900 placeholder-gray-400 bg-white border rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent ${
+                error
+                  ? "border-red-300 focus:ring-red-300"
+                  : "border-gray-300 focus:ring-gray-300"
+              }`}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+            />
 
-                {/* Submit Button */}
-                <button
-                  onClick={handleSubmit}
-                  disabled={!query.trim() || !!error}
-                  className="absolute top-1/2 -translate-y-1/2 right-4 w-10 h-10 flex items-center justify-center bg-black hover:bg-gray-800 disabled:bg-gray-100 disabled:cursor-not-allowed rounded-full transition-colors"
-                >
-                  <svg
-                    className={`w-5 h-5 ${
-                      query.trim() && !error ? "text-white" : "text-gray-600"
-                    }`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 10l7-7m0 0l7 7m-7-7v18"
-                    />
-                  </svg>
-                </button>
-              </div>
-
-              {isLoading && (
-                /* Loading State */
-                <div className="flex flex-col items-center justify-center mt-16">
-                  <div className="relative w-16 h-16 mb-6">
-                    <div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
-                    <div className="absolute inset-0 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                  <p
-                    key={loadingMessageIndex}
-                    className="text-lg text-gray-600 animate-fade-in"
-                  >
-                    {loadingMessages[loadingMessageIndex]}
-                  </p>
-                </div>
-              )}
-
-              {/* Error Message */}
-              {error && (
-                <p className="mt-3 text-sm text-red-600 text-center">{error}</p>
-              )}
-            </>
-          </div>
-        )}
-        {companyCharacterInfo && (
-          <div className="pt-[10vh]">
-            <CompanyResult companyCharacterInfo={companyCharacterInfo} />
-            <div className="flex justify-center mt-8 mb-8">
-              <button
-                onClick={() => setCompanyCharacterInfo(null)}
-                className="text-gray-500 hover:text-gray-700 hover:underline text-lg transition-colors cursor-pointer"
+            {/* Submit Button */}
+            <button
+              onClick={handleSubmit}
+              disabled={!query.trim() || !!error}
+              className="absolute top-1/2 -translate-y-1/2 right-4 w-10 h-10 flex items-center justify-center bg-black hover:bg-gray-800 disabled:bg-gray-100 disabled:cursor-not-allowed rounded-full transition-colors"
+            >
+              <svg
+                className={`w-5 h-5 ${
+                  query.trim() && !error ? "text-white" : "text-gray-600"
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                Generate characters for a new company?
-              </button>
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 10l7-7m0 0l7 7m-7-7v18"
+                />
+              </svg>
+            </button>
           </div>
-        )}
+
+          {isLoading && (
+            /* Loading State */
+            <div className="flex flex-col items-center justify-center mt-16">
+              <div className="relative w-16 h-16 mb-6">
+                <div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+              </div>
+              <p
+                key={loadingMessageIndex}
+                className="text-lg text-gray-600 animate-fade-in"
+              >
+                {loadingMessages[loadingMessageIndex]}
+              </p>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <p className="mt-3 text-sm text-red-600 text-center">{error}</p>
+          )}
+        </div>
       </main>
     </div>
   );

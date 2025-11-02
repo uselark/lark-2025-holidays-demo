@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useStytch, useStytchUser } from "@stytch/react";
+import { Link } from "react-router-dom";
 
 export function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -38,7 +39,11 @@ export function Header() {
   return (
     <header className="border-b border-gray-200">
       <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-        <h1 className="text-xl font-semibold text-gray-900">YC Halloween</h1>
+        <Link to="/">
+          <h1 className="text-xl font-semibold text-gray-900 hover:text-gray-700 transition-colors cursor-pointer">
+            YC Halloween
+          </h1>
+        </Link>
 
         {/* User Dropdown */}
         <div className="relative" ref={dropdownRef}>

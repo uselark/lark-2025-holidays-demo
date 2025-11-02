@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator
 from typing import List, Optional, Literal
 from stytch import Client
+from stytch.consumer.models.sessions import AuthenticateResponse
 from stytch.core.response_base import StytchError
 
 from character_generator import CharacterGenerator, CompanyCharacterInfo
@@ -36,7 +37,9 @@ character_generator = CharacterGenerator()
 
 
 # Authentication dependency
-async def verify_session_token(authorization: Optional[str] = Header(None)) -> dict:
+async def verify_session_token(
+    authorization: Optional[str] = Header(None),
+) -> AuthenticateResponse:
     """
     Verify the Stytch session token from the Authorization header.
     Returns the authenticated session data.
@@ -77,8 +80,13 @@ async def health_check():
 
 
 @app.post("/api/customers", response_model=str)
-async def create_customer(session: dict = Depends(verify_session_token)):
+async def create_customer(
+    session: AuthenticateResponse = Depends(verify_session_token),
+):
     stytch_user_id = session.user.user_id
+    user_email = session.user.emails[0] if session.user.emails else None
+    user_name = session.user.name
+
     return stytch_user_id
 
 
@@ -99,7 +107,8 @@ class CompanyCharacterRequest(BaseModel):
 
 @app.post("/api/company_characters", response_model=CompanyCharacterInfo)
 async def generate_company_characters(
-    request: CompanyCharacterRequest, session: dict = Depends(verify_session_token)
+    request: CompanyCharacterRequest,
+    session: AuthenticateResponse = Depends(verify_session_token),
 ):
 
     company_characters = character_generator.generate_characters_for_company(

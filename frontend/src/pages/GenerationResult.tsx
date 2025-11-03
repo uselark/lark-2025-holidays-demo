@@ -21,7 +21,6 @@ export function GenerationResult() {
           setCompanyCharacterInfo(data);
         } catch (err) {
           setError("Failed to load generation data");
-          console.error("Error parsing stored data:", err);
         }
       } else {
         setError("Generation not found");
@@ -77,7 +76,7 @@ export function GenerationResult() {
               onClick={handleGenerateNew}
               className="text-gray-500 hover:text-gray-700 hover:underline text-lg transition-colors cursor-pointer"
             >
-              Generate characters for a new company?
+              Generate more characters?
             </button>
           </div>
         </div>

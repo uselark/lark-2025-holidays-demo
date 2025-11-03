@@ -40,8 +40,9 @@ export function Header() {
     <header className="border-b border-gray-200">
       <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <Link to="/">
-          <h1 className="text-xl font-semibold text-gray-900 hover:text-gray-700 transition-colors cursor-pointer">
-            YC Halloween
+          <h1 className="flex items-center gap-2 text-xl font-semibold text-gray-900 hover:text-gray-700 transition-colors cursor-pointer">
+            <img src="/pumpkin.svg" alt="Pumpkin" className="w-6 h-6" />
+            Halloween 2025
           </h1>
         </Link>
 

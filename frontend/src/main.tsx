@@ -16,7 +16,6 @@ const stytchOptions = {
 };
 
 const stytchPublicKey = import.meta.env.VITE_STYTCH_PUBLIC_TOKEN;
-console.log("stytchPublicKey", stytchPublicKey);
 
 const stytchClient = new StytchUIClient(stytchPublicKey, stytchOptions);
 

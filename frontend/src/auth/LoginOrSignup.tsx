@@ -11,19 +11,41 @@ export function LoginOrSignup() {
     },
   };
 
+  const styles = {
+    container: {
+      width: "100%",
+    },
+    colors: {
+      primary: "#6B7280",
+      secondary: "#9CA3AF",
+      success: "#22C55E",
+      error: "#EF4444",
+    },
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    hideHeaderText: true,
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Lark - YC Halloween 2025
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 flex items-center justify-center gap-3">
+          <img src="/pumpkin.svg" alt="Pumpkin" className="w-10 h-10" />
+          Lark Halloween 2025
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Log in or create an account to continue
+        <p className="mt-2 text-center  text-gray-600">
+          Sign in to create spooky Halloween characters!
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <StytchLogin config={config} />
+        <StytchLogin
+          config={config}
+          styles={styles}
+          strings={{
+            "login.title": "Lark Halloween 2025!",
+          }}
+        />
       </div>
     </div>
   );

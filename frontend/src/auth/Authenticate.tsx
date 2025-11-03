@@ -28,7 +28,6 @@ export function Authenticate() {
         // Create a customer with the Stytch user ID
         const sessionToken = stytchClient.session.getTokens()?.session_token;
         if (!sessionToken) {
-          console.error("No session token available");
           return;
         }
 
@@ -41,12 +40,10 @@ export function Authenticate() {
             },
           }
         );
-        console.log("Customer created:", customer);
 
         // Redirect to dashboard on success
         navigate("/", { replace: true });
       } catch (err) {
-        console.error("Authentication error:", err);
         setError("Authentication failed. Please try again.");
       }
     };

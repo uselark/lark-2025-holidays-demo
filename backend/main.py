@@ -111,7 +111,7 @@ async def generate_company_characters(
     session: AuthenticateResponse = Depends(verify_session_token),
 ):
 
-    company_characters = character_generator.generate_characters_for_company(
+    company_characters = await character_generator.generate_characters_for_company(
         request.company_url
     )
     return company_characters

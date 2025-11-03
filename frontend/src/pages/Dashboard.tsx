@@ -60,7 +60,6 @@ export function Dashboard() {
 
       // Call the API endpoint
       const data = await fetchCompanyCharacters(query, sessionToken);
-      console.log("Company characters response:", data);
 
       // Generate a random UUID for this generation
       const generationId = crypto.randomUUID();
@@ -71,12 +70,7 @@ export function Dashboard() {
       // Navigate to the generation result page
       navigate(`/generation/${generationId}`);
     } catch (err) {
-      console.error("Error fetching company characters:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to fetch company characters"
-      );
+      setError("Oops something went wrong :(");
     } finally {
       setIsLoading(false);
     }
@@ -161,8 +155,17 @@ export function Dashboard() {
           )}
 
           {/* Error Message */}
-          {error && (
-            <p className="mt-3 text-sm text-red-600 text-center">{error}</p>
+          {error && !isLoading && (
+            <div className="flex flex-col items-center justify-center mt-16">
+              <div className="bg-red-50 border border-red-200 rounded-2xl px-8 py-6 max-w-md">
+                <p className="text-lg text-red-600 text-center font-medium">
+                  {error}
+                </p>
+                <p className="text-sm text-red-500 text-center mt-2">
+                  Please try again or contact support if the issue persists.
+                </p>
+              </div>
+            </div>
           )}
         </div>
       </main>

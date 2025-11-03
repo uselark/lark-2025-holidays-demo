@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import re
 from enum import Enum
 from typing import List, Type
 from dotenv import load_dotenv
@@ -64,7 +65,7 @@ class CharacterGenerator:
                     character_image_url=self.character_name_to_image_url[
                         character_name
                     ],
-                    reasoning=character.reasoning,
+                    reasoning=self._strip_citations(character.reasoning),
                 )
             )
 
@@ -119,14 +120,27 @@ class CharacterGenerator:
         # Create enum with name as both the key and value
         return Enum("CharacterName", {name: name for name in character_names})
 
+    def _strip_citations(self, text: str) -> str:
+        """Remove citation markers from text.
+
+        Citations appear as Unicode patterns like: \ue200cite\ue202turn0view0\ue201
+        """
+        # Remove citation patterns: \ue200....\ue201
+        cleaned_text = re.sub(r"\ue200[^\ue201]*\ue201", "", text)
+        return cleaned_text.strip()
+
     def _make_prompt_message(self, yc_company_url: str) -> str:
         return f"""
 You are a creative assistant that powers a fun halloween game for founders.
 
-You're given a YC company URL that has information about the company and its founders. Use the web search tool to get this information. Then assign a disney character to each founder based on the information you have.
+You're given a YC company URL that has information about the company and its founders. Use the web search tool to get this information. Then assign a disney character to each founder. When you assign a character to each founder, provide a short funny & spicy reasoning for your choice. Don't include chracter name in your reasoning. 
 
-Be creative, fun, and spicy for this task. When you assign a character to each founder, provide a short funny & spicy reasoning for your choice. Don't include chracter name in your reasoning. Try to guess geneder of founder based on name and assign a character that is relevant to the gender. It is also okay to roast the founder in your reasoning if it is funny.
+Here are some guidelines for the character assignment:
+- The goal of this task is to ultimately generate a funny reasoning for each character assignment, and not to pick the closest matching character based on company information. The character assignment can be based on the company information or be somewhat random (to increase the fun factor). 
+- Since most YC companies are tech companies, avoid over indexing on tech characters. It is more fun if character assignments change every run of the game.
+- Try to guess geneder of founder based on name and assign a character that is relevant to the gender. 
+- It is okay to roast the founder in your reasoning if it is funny.
 
-In your response you will include the company founder character assignments and some information about the company that you extracted from the web search. Don't include any citations in your response since this is fun game. Company logo url will be of type `https://bookface-images.s3.amazonaws.com/...`. For company name, use the name that is displayed on the company page.
+Don't include any citations in your response since this is fun game.
 
 Here is the YC company url: {yc_company_url}"""

@@ -1,5 +1,6 @@
 import { StytchLogin } from "@stytch/react";
 import { OAuthProviders, Products } from "@stytch/vanilla-js";
+import { Footer } from "../components/Footer";
 
 export function LoginOrSignup() {
   const config = {
@@ -27,26 +28,29 @@ export function LoginOrSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 flex items-center justify-center gap-3">
-          <img src="/pumpkin.svg" alt="Pumpkin" className="w-10 h-10" />
-          Lark Halloween 2025
-        </h2>
-        <p className="mt-2 text-center  text-gray-600">
-          Sign in to create spooky Halloween characters!
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <main className="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 flex items-center justify-center gap-3">
+            <img src="/pumpkin.svg" alt="Pumpkin" className="w-10 h-10" />
+            Lark Halloween 2025
+          </h2>
+          <p className="mt-2 text-center text-gray-600">
+            Sign in to create spooky Halloween characters!
+          </p>
+        </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <StytchLogin
-          config={config}
-          styles={styles}
-          strings={{
-            "login.title": "Lark Halloween 2025!",
-          }}
-        />
-      </div>
+        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+          <StytchLogin
+            config={config}
+            styles={styles}
+            strings={{
+              "login.title": "Lark Halloween 2025!",
+            }}
+          />
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }

@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useStytch } from "@stytch/react";
 import { fetchCompanyCharacters } from "../api/api";
 import { Header } from "../components/Header";
+import { Footer } from "../components/Footer";
 
 const loadingMessages = [
   "Generating halloween characters (can take upto 30 seconds)...",
-  "Our AI agents are hard at work...",
+  "AI agents are hard at work...",
   "Crafting spooky characters...",
   "Summoning the perfect costume...",
 ];
@@ -14,7 +15,10 @@ const loadingMessages = [
 export function Dashboard() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<{
+    type: "validation" | "other";
+    message: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const stytchClient = useStytch();
@@ -41,11 +45,14 @@ export function Dashboard() {
 
   const handleSubmit = async () => {
     if (!validateYCUrl(query)) {
-      setError("Please enter a valid YC company URL");
+      setError({
+        type: "validation",
+        message: "Please enter a valid YC company URL",
+      });
       return;
     }
 
-    setError("");
+    setError(null);
     setIsLoading(true);
 
     try {
@@ -53,7 +60,10 @@ export function Dashboard() {
       const sessionToken = stytchClient.session.getTokens()?.session_token;
 
       if (!sessionToken) {
-        setError("No active session. Please log in again.");
+        setError({
+          type: "other",
+          message: "No active session. Please log in again.",
+        });
         setIsLoading(false);
         return;
       }
@@ -70,7 +80,10 @@ export function Dashboard() {
       // Navigate to the generation result page
       navigate(`/generation/${generationId}`);
     } catch (err) {
-      setError("Oops something went wrong :(");
+      setError({
+        type: "other",
+        message: "Oops something went wrong :(",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +92,7 @@ export function Dashboard() {
   const handleInputChange = (value: string) => {
     setQuery(value);
     if (error) {
-      setError("");
+      setError(null);
     }
   };
 
@@ -157,18 +170,21 @@ export function Dashboard() {
           {/* Error Message */}
           {error && !isLoading && (
             <div className="flex flex-col items-center justify-center mt-16">
-              <div className="bg-red-50 border border-red-200 rounded-2xl px-8 py-6 max-w-md">
-                <p className="text-lg text-red-600 text-center font-medium">
-                  {error}
+              <div className="px-8 py-6 max-w-md">
+                <p className="text-red-600 text-center font-medium">
+                  {error.message}
                 </p>
-                <p className="text-sm text-red-500 text-center mt-2">
-                  Please try again or contact support if the issue persists.
-                </p>
+                {error.type === "other" && (
+                  <p className="text-sm text-red-500 text-center mt-2">
+                    Please try again or contact support if the issue persists.
+                  </p>
+                )}
               </div>
             </div>
           )}
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

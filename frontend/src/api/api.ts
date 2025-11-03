@@ -1,5 +1,5 @@
 // Base API URL constant
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://localhost:8001";
 
 // Types
 export interface CompanyCharacter {
@@ -30,6 +30,32 @@ export const fetchCompanyCharacters = async (
     body: JSON.stringify({
       company_url: companyUrl,
     }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.detail || `Request failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
+};
+
+export const getOrCreateCustomer = async ({
+  stytchUserId,
+  sessionToken,
+}: {
+  stytchUserId: string;
+  sessionToken: string;
+}) => {
+  const response = await fetch(`${API_BASE_URL}/api/customers`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${sessionToken}`,
+    },
+    body: JSON.stringify({ stytch_user_id: stytchUserId }),
   });
 
   if (!response.ok) {

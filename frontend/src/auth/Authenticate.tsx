@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStytch } from "@stytch/react";
-import axios from "axios";
 import { Footer } from "../components/Footer";
+import { getOrCreateCustomer } from "../api/api";
 
 export function Authenticate() {
   const navigate = useNavigate();
@@ -32,15 +32,15 @@ export function Authenticate() {
           return;
         }
 
-        await axios.post<string>(
-          "/api/customers",
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${sessionToken}`,
-            },
-          }
-        );
+        const stytchUserId = (await stytchClient.user.get()).user_id;
+        if (!stytchUserId) {
+          return;
+        }
+
+        await getOrCreateCustomer({
+          stytchUserId: stytchUserId,
+          sessionToken: sessionToken,
+        });
 
         // Redirect to dashboard on success
         navigate("/", { replace: true });

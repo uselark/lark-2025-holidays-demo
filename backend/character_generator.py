@@ -3,6 +3,9 @@ import json
 import os
 import re
 from enum import Enum
+import uuid
+from fastapi import HTTPException
+from upstash_redis import Redis
 from typing import List, Type
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
@@ -12,6 +15,7 @@ from website_scraper import WebsiteScraper
 
 load_dotenv()
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+redis = Redis.from_env()
 
 
 class YCFoudnerInfo(BaseModel):
@@ -32,6 +36,7 @@ class CompanyCharacterExternal(BaseModel):
 
 
 class CompanyCharacterInfo(BaseModel):
+    id: str
     company_name: str
     company_yc_url: str
     company_logo_url: str
@@ -69,12 +74,39 @@ class CharacterGenerator:
                 )
             )
 
-        return CompanyCharacterInfo(
+        company_characters_info = CompanyCharacterInfo(
+            id=uuid.uuid4().hex,
             company_name=company_info.company_name,
             company_logo_url=company_info.company_small_logo_url,
             company_yc_url=company_url,
             characters=company_characters_external,
         )
+        await self._persist_character_generation(company_characters_info)
+        return company_characters_info
+
+    async def get_character_generation(
+        self, generation_id: str
+    ) -> CompanyCharacterInfo:
+        return await self._get_character_generation(generation_id)
+
+    async def _persist_character_generation(
+        self, company_characters_info: CompanyCharacterInfo
+    ):
+        redis.set(
+            company_characters_info.id,
+            company_characters_info.model_dump_json(),
+        )
+
+    async def _get_character_generation(
+        self, generation_id: str
+    ) -> CompanyCharacterInfo:
+        company_characters_info = redis.get(generation_id)
+        if company_characters_info:
+            return CompanyCharacterInfo.model_validate_json(company_characters_info)
+        else:
+            raise HTTPException(
+                status_code=404, detail="Company character generation not found"
+            )
 
     async def _assign_characters_to_founders(
         self, yc_company_url: str

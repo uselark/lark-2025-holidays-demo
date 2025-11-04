@@ -10,6 +10,7 @@ export interface CompanyCharacter {
 }
 
 export interface CompanyCharacterInfo {
+  id: string;
   company_name: string;
   company_yc_url: string;
   company_logo_url: string;
@@ -17,7 +18,7 @@ export interface CompanyCharacterInfo {
 }
 
 // API functions
-export const fetchCompanyCharacters = async (
+export const generateCompanyCharacters = async (
   companyUrl: string,
   sessionToken: string
 ): Promise<CompanyCharacterInfo> => {
@@ -31,6 +32,23 @@ export const fetchCompanyCharacters = async (
       company_url: companyUrl,
     }),
   });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.detail || `Request failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
+};
+
+export const getCompanyCharacters = async (
+  generationId: string
+): Promise<CompanyCharacterInfo> => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/company_characters/${generationId}`
+  );
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

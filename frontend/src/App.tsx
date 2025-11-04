@@ -17,14 +17,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/generation/:id"
-          element={
-            <ProtectedRoute>
-              <GenerationResult />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/generation/:id" element={<GenerationResult />} />
       </Routes>
     </BrowserRouter>
   );

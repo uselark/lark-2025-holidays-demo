@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { CompanyCharacterInfo } from "../api/api";
+import { CompanyCharacterInfo, getCompanyCharacters } from "../api/api";
 import { Header } from "../components/Header";
 import { CompanyResult } from "../components/CompanyResult";
 import { Footer } from "../components/Footer";
+import { useStytchSession } from "@stytch/react";
 
 export function GenerationResult() {
   const { id } = useParams<{ id: string }>();
@@ -11,32 +12,54 @@ export function GenerationResult() {
   const [companyCharacterInfo, setCompanyCharacterInfo] =
     useState<CompanyCharacterInfo | null>(null);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [showToast, setShowToast] = useState(false);
+  const { session } = useStytchSession();
+  const isLoggedIn = !!session;
 
   useEffect(() => {
-    // Retrieve the data from localStorage using the id
-    if (id) {
-      const storedData = localStorage.getItem(`generation-${id}`);
-      if (storedData) {
-        try {
-          const data = JSON.parse(storedData);
-          setCompanyCharacterInfo(data);
-        } catch (err) {
-          setError("Failed to load generation data");
-        }
-      } else {
-        setError("Generation not found");
+    const fetchGenerationData = async () => {
+      if (!id) {
+        setError("No generation ID provided");
+        setIsLoading(false);
+        return;
       }
-    }
+
+      try {
+        setIsLoading(true);
+        const data = await getCompanyCharacters(id);
+        setCompanyCharacterInfo(data);
+      } catch (err) {
+        console.error("Error fetching generation:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load generation data"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchGenerationData();
   }, [id]);
 
   const handleGenerateNew = () => {
     navigate("/");
   };
 
+  const handleShareUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (err) {
+      console.error("Failed to copy URL:", err);
+    }
+  };
+
   if (error) {
     return (
       <div className="min-h-screen bg-white flex flex-col">
-        <Header />
+        {isLoggedIn && <Header />}
         <main className="flex-1 flex flex-col items-center justify-center px-4">
           <div className="text-center">
             <p className="text-xl text-red-600 mb-6">{error}</p>
@@ -53,14 +76,36 @@ export function GenerationResult() {
     );
   }
 
-  if (!companyCharacterInfo) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex flex-col">
-        <Header />
+        {isLoggedIn && <Header />}
         <main className="flex-1 flex flex-col items-center justify-center px-4">
           <div className="relative w-16 h-16">
             <div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
             <div className="absolute inset-0 border-4 border-black border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!companyCharacterInfo) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col">
+        {isLoggedIn && <Header />}
+        <main className="flex-1 flex flex-col items-center justify-center px-4">
+          <div className="text-center">
+            <p className="text-xl text-gray-600 mb-6">
+              No generation data found
+            </p>
+            <button
+              onClick={handleGenerateNew}
+              className="text-gray-500 hover:text-gray-700 hover:underline text-lg transition-colors cursor-pointer"
+            >
+              Go back to dashboard
+            </button>
           </div>
         </main>
         <Footer />
@@ -147,11 +192,18 @@ export function GenerationResult() {
 
       {/* Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
-        <Header />
+        {isLoggedIn && <Header />}
         <main className="flex-1 flex flex-col items-center px-4">
           <div className="pt-10">
             <CompanyResult companyCharacterInfo={companyCharacterInfo} />
-            <div className="flex justify-center mt-8 mb-8">
+            <div className="flex justify-center items-center gap-3 mt-8 mb-8">
+              <button
+                onClick={handleShareUrl}
+                className="text-gray-500 hover:text-gray-700 hover:underline text-lg transition-colors cursor-pointer"
+              >
+                Share result with others
+              </button>
+              <span className="text-gray-400 text-lg">or</span>
               <button
                 onClick={handleGenerateNew}
                 className="text-gray-500 hover:text-gray-700 hover:underline text-lg transition-colors cursor-pointer"
@@ -163,6 +215,13 @@ export function GenerationResult() {
         </main>
         <Footer />
       </div>
+
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300">
+          URL copied to clipboard!
+        </div>
+      )}
     </div>
   );
 }

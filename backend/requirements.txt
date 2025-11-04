@@ -4,3 +4,4 @@ pydantic==2.5.3
 stytch==13.27.0
 openai==2.6.1
 firecrawl==4.5.0
+upstash-redis==1.5.0

@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStytch } from "@stytch/react";
-import { fetchCompanyCharacters } from "../api/api";
-import { Header } from "../components/Header";
-import { Footer } from "../components/Footer";
+import { generateCompanyCharacters } from "../api/api";
 
 const loadingMessages = [
   "Generating halloween characters (can take upto 30 seconds)...",
@@ -69,13 +67,10 @@ export function CharacterGenerator() {
       }
 
       // Call the API endpoint
-      const data = await fetchCompanyCharacters(query, sessionToken);
+      const data = await generateCompanyCharacters(query, sessionToken);
 
       // Generate a random UUID for this generation
-      const generationId = crypto.randomUUID();
-
-      // Store the data in localStorage
-      localStorage.setItem(`generation-${generationId}`, JSON.stringify(data));
+      const generationId = data.id;
 
       // Navigate to the generation result page
       navigate(`/generation/${generationId}`);

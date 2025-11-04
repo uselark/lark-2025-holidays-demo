@@ -20,7 +20,7 @@ app = FastAPI(title="Lark Demo API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite's default port
+    allow_origins=["http://localhost:5174"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -113,5 +113,15 @@ async def generate_company_characters(
 
     company_characters = await character_generator.generate_characters_for_company(
         request.company_url
+    )
+    return company_characters
+
+
+@app.get("/api/company_characters/{generation_id}", response_model=CompanyCharacterInfo)
+async def get_company_characters(
+    generation_id: str,
+) -> CompanyCharacterInfo:
+    company_characters = await character_generator.get_character_generation(
+        generation_id
     )
     return company_characters

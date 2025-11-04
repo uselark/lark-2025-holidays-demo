@@ -88,14 +88,14 @@ npm install
 4. Configure Stytch OAuth:
    - Go to [Stytch Dashboard → OAuth](https://stytch.com/dashboard/oauth)
    - Enable Google OAuth
-   - Add redirect URL: `http://localhost:5173/authenticate`
+   - Add redirect URL: `http://localhost:5174/authenticate`
 
 5. Run the development server:
 ```bash
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:5173`
+The frontend will be available at `http://localhost:5174`
 
 ## API Endpoints
 

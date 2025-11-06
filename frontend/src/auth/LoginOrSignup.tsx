@@ -32,11 +32,11 @@ export function LoginOrSignup() {
       <main className="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 flex items-center justify-center gap-3">
-            <img src="/pumpkin.svg" alt="Pumpkin" className="w-10 h-10" />
-            Lark Halloween 2025
+            <img src="/turkey.svg" alt="Turkey" className="w-10 h-10" />
+            Lark Thanksgiving 2025
           </h2>
           <p className="mt-2 text-center text-gray-600">
-            Sign in to create spooky Halloween characters!
+            Sign in to turn founders into fun disney characters!
           </p>
         </div>
 
@@ -45,7 +45,7 @@ export function LoginOrSignup() {
             config={config}
             styles={styles}
             strings={{
-              "login.title": "Lark Halloween 2025!",
+              "login.title": "Lark Thanksgiving 2025!",
             }}
           />
         </div>

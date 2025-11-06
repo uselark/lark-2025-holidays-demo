@@ -163,7 +163,7 @@ class CharacterGenerator:
 
     def _make_prompt_message(self, yc_company_url: str) -> str:
         return f"""
-You are a creative assistant that powers a fun halloween game for founders.
+You are a creative assistant that powers a fun thanksgiving game for founders.
 
 You're given a YC company URL that has information about the company and its founders. Use the web search tool to get this information. Then assign a disney character to each founder. When you assign a character to each founder, provide a short funny & spicy reasoning for your choice. Don't include chracter name in your reasoning. 
 

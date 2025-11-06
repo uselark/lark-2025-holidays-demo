@@ -1,4 +1,4 @@
-# Lark 2025 Halloween demo
+# Lark 2025 Thanksgiving demo
 
 A fun little app that demonstrates a billing integration with [Lark](https://uselark.ai/)
 

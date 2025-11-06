@@ -4,10 +4,10 @@ import { useStytch } from "@stytch/react";
 import { generateCompanyCharacters } from "../api/api";
 
 const loadingMessages = [
-  "Generating halloween characters (can take upto 30 seconds)...",
+  "Generating disney characters (can take upto 30 seconds)...",
   "AI agents are hard at work...",
-  "Crafting spooky characters...",
-  "Summoning the perfect costume...",
+  "Crafting disney characters...",
+  "Preparing the perfect character...",
 ];
 
 export function CharacterGenerator({ subText }: { subText: React.ReactNode }) {

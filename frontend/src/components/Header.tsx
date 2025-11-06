@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useStytch, useStytchUser } from "@stytch/react";
 import { Link } from "react-router-dom";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 export function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLogoutLoading, setIsLogoutLoading] = useState(false);
   const stytchClient = useStytch();
   const { user } = useStytchUser();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -29,10 +31,13 @@ export function Header() {
   }, [isDropdownOpen]);
 
   const handleLogout = async () => {
+    setIsLogoutLoading(true);
     try {
       await stytchClient.session.revoke();
     } catch (err) {
       console.error("Error logging out:", err);
+    } finally {
+      setIsLogoutLoading(false);
     }
   };
 
@@ -78,8 +83,14 @@ export function Header() {
                   setIsDropdownOpen(false);
                   handleLogout();
                 }}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                disabled={isLogoutLoading}
+                className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${
+                  isLogoutLoading
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
               >
+                {isLogoutLoading && <LoadingSpinner />}
                 Logout
               </button>
             </div>

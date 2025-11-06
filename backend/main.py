@@ -1,15 +1,14 @@
 import os
-import random
 import re
+from asgi_correlation_id import CorrelationIdMiddleware
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi import FastAPI, HTTPException, Depends, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator
-from typing import List, Optional, Literal
+from typing import Optional
 from stytch import Client
 from stytch.consumer.models.sessions import AuthenticateResponse
 from stytch.core.response_base import StytchError
-
 from character_generator import CharacterGenerator, CompanyCharacterInfo
 
 # Load environment variables from .env file
@@ -20,16 +19,21 @@ app = FastAPI(title="Lark Demo API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5174"],
+    allow_origins=["http://localhost:5176"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(CorrelationIdMiddleware)
 
+STYTCH_PROJECT_ID = os.getenv("STYTCH_PROJECT_ID")
+STYTCH_SECRET = os.getenv("STYTCH_SECRET")
+if not STYTCH_PROJECT_ID or not STYTCH_SECRET:
+    raise ValueError("STYTCH_PROJECT_ID and STYTCH_SECRET must be set")
 
 stytch_client = Client(
-    project_id=os.getenv("STYTCH_PROJECT_ID"),
-    secret=os.getenv("STYTCH_SECRET"),
+    project_id=STYTCH_PROJECT_ID,
+    secret=STYTCH_SECRET,
     environment="test",
 )
 
@@ -84,9 +88,20 @@ async def create_customer(
     session: AuthenticateResponse = Depends(verify_session_token),
 ):
     stytch_user_id = session.user.user_id
-    user_email = session.user.emails[0] if session.user.emails else None
-    user_name = session.user.name
+    user_email = session.user.emails[0].email if session.user.emails else None
+    user_name = (
+        (
+            (session.user.name.first_name or "")
+            + " "
+            + (session.user.name.last_name or "")
+        )
+        if session.user.name
+        else None
+    )
 
+    print(
+        f"Would have created customer with details: {stytch_user_id}, email: {user_email}, name: {user_name}"
+    )
     return stytch_user_id
 
 
@@ -95,14 +110,14 @@ class CompanyCharacterRequest(BaseModel):
 
     @field_validator("company_url")
     @classmethod
-    def validate_yc_url(cls, v: str) -> str:
+    def validate_yc_url(cls, yc_company_url: str) -> str:
         """Validate that the URL matches the Y Combinator companies format."""
         pattern = r"^https://www\.ycombinator\.com/companies/[a-zA-Z0-9\-]+$"
-        if not re.match(pattern, v):
+        if not re.match(pattern, yc_company_url):
             raise ValueError(
                 "URL must match the format: https://www.ycombinator.com/companies/{company_name}"
             )
-        return v
+        return yc_company_url
 
 
 @app.post("/api/company_characters", response_model=CompanyCharacterInfo)

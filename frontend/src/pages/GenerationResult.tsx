@@ -208,7 +208,7 @@ export function GenerationResult() {
                 onClick={handleGenerateNew}
                 className="text-gray-500 hover:text-gray-700 hover:underline text-lg transition-colors cursor-pointer"
               >
-                Generate more characters?
+                generate more characters?
               </button>
             </div>
           </div>

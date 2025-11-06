@@ -10,7 +10,7 @@ const loadingMessages = [
   "Summoning the perfect costume...",
 ];
 
-export function CharacterGenerator() {
+export function CharacterGenerator({ subText }: { subText: React.ReactNode }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [error, setError] = useState<{
@@ -140,6 +140,10 @@ export function CharacterGenerator() {
           </svg>
         </button>
       </div>
+
+      {subText && !isLoading && !error && (
+        <div className="mt-20">{subText}</div>
+      )}
 
       {isLoading && (
         /* Loading State */

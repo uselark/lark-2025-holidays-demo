@@ -8,7 +8,7 @@ from pydantic import BaseModel
 load_dotenv()
 
 PRICING_METRIC_EVENT_NAME = "character_generation"
-FREE_PLAN_RATE_CARD_ID = "rc_9R9cGOyGev7eDxTMbBBBt6Ts"
+FREE_PLAN_RATE_CARD_ID = "rc_yFSBwgtdxdcuezEMSnIvggBV"
 
 LARK_API_KEY = os.getenv("LARK_API_KEY")
 

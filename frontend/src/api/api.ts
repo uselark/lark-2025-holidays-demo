@@ -85,3 +85,44 @@ export const getOrCreateCustomer = async ({
 
   return response.json();
 };
+
+export interface UpdateSubscriptionResponse {
+  type: "success" | "checkout_action_required";
+  checkout_url: string | null;
+}
+
+export const updateSubscription = async ({
+  subscriptionId,
+  newRateCardId,
+  checkoutSuccessCallbackUrl,
+  checkoutCancelCallbackUrl,
+  sessionToken,
+}: {
+  subscriptionId: string;
+  newRateCardId: string;
+  checkoutSuccessCallbackUrl: string;
+  checkoutCancelCallbackUrl: string;
+  sessionToken: string;
+}): Promise<UpdateSubscriptionResponse> => {
+  const response = await fetch(`${API_BASE_URL}/api/update_subscription`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${sessionToken}`,
+    },
+    body: JSON.stringify({
+      subscription_id: subscriptionId,
+      new_rate_card_id: newRateCardId,
+      checkout_success_callback_url: checkoutSuccessCallbackUrl,
+      checkout_cancel_callback_url: checkoutCancelCallbackUrl,
+    }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.detail || `Request failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
+};

@@ -1,8 +1,8 @@
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { useEffect, useState } from "react";
-import { BillingState } from "./larkClient";
-import { getPlanChangeType, PricingPlan } from "./paywallPlans";
+import { BillingState } from "../billing/larkClient";
+import { getPlanChangeType, PricingPlan } from "../billing/paywallPlans";
 import { useStytch } from "@stytch/react";
 
 function getPaywallSubText({

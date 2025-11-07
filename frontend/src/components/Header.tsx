@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { useStytch, useStytchUser } from "@stytch/react";
 import { Link } from "react-router-dom";
+import { useBillingManager } from "../billing/useBillingManager";
 import { LoadingSpinner } from "./LoadingSpinner";
 
 export function Header() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isManageBillingLoading, setIsManageBillingLoading] = useState(false);
   const [isLogoutLoading, setIsLogoutLoading] = useState(false);
   const stytchClient = useStytch();
   const { user } = useStytchUser();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { createCustomerPortalSession } = useBillingManager();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -38,6 +41,21 @@ export function Header() {
       console.error("Error logging out:", err);
     } finally {
       setIsLogoutLoading(false);
+    }
+  };
+
+  const handleManageBilling = async () => {
+    setIsManageBillingLoading(true);
+    try {
+      const url = await createCustomerPortalSession({
+        returnUrl: `${window.location.href}`,
+      });
+      window.open(url, "_blank");
+      setIsDropdownOpen(false);
+    } catch (err) {
+      console.error("Error opening billing portal:", err);
+    } finally {
+      setIsManageBillingLoading(false);
     }
   };
 
@@ -79,13 +97,25 @@ export function Header() {
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
               <button
+                onClick={handleManageBilling}
+                disabled={isManageBillingLoading || isLogoutLoading}
+                className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${
+                  isManageBillingLoading || isLogoutLoading
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                {isManageBillingLoading && <LoadingSpinner />}
+                Manage Billing
+              </button>
+              <button
                 onClick={() => {
                   setIsDropdownOpen(false);
                   handleLogout();
                 }}
-                disabled={isLogoutLoading}
+                disabled={isManageBillingLoading || isLogoutLoading}
                 className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${
-                  isLogoutLoading
+                  isManageBillingLoading || isLogoutLoading
                     ? "text-gray-400 cursor-not-allowed"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}

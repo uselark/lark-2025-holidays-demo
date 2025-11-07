@@ -98,10 +98,6 @@ export function Paywall({
 
     const { subscriptionId, newRateCardId } = pendingUpgrade;
 
-    console.log(
-      `Confirmed upgrade to: ${newRateCardId} for subscription: ${subscriptionId}`
-    );
-
     setShowConfirmModal(false);
 
     try {

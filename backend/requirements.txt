@@ -5,4 +5,5 @@ stytch==13.27.0
 openai==2.6.1
 firecrawl==4.5.0
 upstash-redis==1.5.0
+lark-billing==0.1.4
 asgi-correlation-id==4.3.4

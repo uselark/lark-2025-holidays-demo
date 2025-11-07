@@ -11,9 +11,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+LARK_API_KEY = os.getenv("LARK_API_KEY")
+assert LARK_API_KEY is not None
 
 lark = Lark(
-    api_key=os.getenv("LARK_API_KEY"),
+    api_key=LARK_API_KEY,
 )
 
 

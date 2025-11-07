@@ -15,12 +15,15 @@ from character_generator import CharacterGenerator, CompanyCharacterInfo
 # Load environment variables from .env file
 load_dotenv()
 
+DASHBOARD_URL = os.getenv("DASHBOARD_URL")
+assert DASHBOARD_URL is not None
+
 app = FastAPI(title="Lark Demo API")
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5176"],
+    allow_origins=[DASHBOARD_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,13 +32,17 @@ app.add_middleware(CorrelationIdMiddleware)
 
 STYTCH_PROJECT_ID = os.getenv("STYTCH_PROJECT_ID")
 STYTCH_SECRET = os.getenv("STYTCH_SECRET")
-if not STYTCH_PROJECT_ID or not STYTCH_SECRET:
-    raise ValueError("STYTCH_PROJECT_ID and STYTCH_SECRET must be set")
+STYCH_ENVIRONMENT = os.getenv("STYCH_ENVIRONMENT")
+
+if not STYTCH_PROJECT_ID or not STYTCH_SECRET or not STYCH_ENVIRONMENT:
+    raise ValueError(
+        "STYTCH_PROJECT_ID and STYTCH_SECRET and STYCH_ENVIRONMENT must be set"
+    )
 
 stytch_client = Client(
     project_id=STYTCH_PROJECT_ID,
     secret=STYTCH_SECRET,
-    environment="test",
+    environment=STYCH_ENVIRONMENT,
 )
 
 character_generator = CharacterGenerator()

@@ -9,9 +9,9 @@ const stytchOptions = {
   cookieOptions: {
     opaqueTokenCookieName: "stytch_session",
     jwtCookieName: "stytch_session_jwt",
-    path: "",
+    path: "/",
     availableToSubdomains: false,
-    domain: "",
+    // Remove domain to use the current domain automatically
   },
 };
 

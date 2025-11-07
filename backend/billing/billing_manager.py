@@ -95,3 +95,12 @@ class BillingManager:
             )
         else:
             raise ValueError(f"Unexpected response type: {response.result.type}")
+
+    def create_customer_portal_session(self, subject_external_id: str, return_url: str):
+        customer_portal_session = (
+            self.lark.customer_portal.create_customer_portal_session(
+                subject_id=subject_external_id,
+                return_url=return_url,
+            )
+        )
+        return customer_portal_session.url

@@ -173,3 +173,23 @@ async def update_subscription(
         checkout_cancel_callback_url=update_subscription_request.checkout_cancel_callback_url,
     )
     return update_subscription_response
+
+
+class CustomerPortalRequest(BaseModel):
+    return_url: str
+
+
+class CustomerPortalSessionResponse(BaseModel):
+    url: str
+
+
+@app.post("/api/customer_portal", response_model=CustomerPortalSessionResponse)
+async def create_customer_portal_session(
+    customer_portal_request: CustomerPortalRequest,
+    session: AuthenticateResponse = Depends(verify_session_token),
+):
+    customer_portal_session_url = billing_manager.create_customer_portal_session(
+        subject_external_id=session.user.user_id,
+        return_url=customer_portal_request.return_url,
+    )
+    return CustomerPortalSessionResponse(url=customer_portal_session_url)

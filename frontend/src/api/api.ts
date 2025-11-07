@@ -126,3 +126,33 @@ export const updateSubscription = async ({
 
   return response.json();
 };
+
+export interface CustomerPortalSessionResponse {
+  url: string;
+}
+
+export const createCustomerPortalSession = async ({
+  sessionToken,
+  returnUrl,
+}: {
+  sessionToken: string;
+  returnUrl: string;
+}): Promise<CustomerPortalSessionResponse> => {
+  const response = await fetch(`${API_BASE_URL}/api/customer_portal`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${sessionToken}`,
+    },
+    body: JSON.stringify({ return_url: returnUrl }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      errorData.detail || `Request failed with status ${response.status}`
+    );
+  }
+
+  return response.json();
+};

@@ -7,3 +7,5 @@ firecrawl==4.5.0
 upstash-redis==1.5.0
 lark-billing==0.1.4
 asgi-correlation-id==4.3.4
+gunicorn==21.2.0
+python-dotenv==1.0.0

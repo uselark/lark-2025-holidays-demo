@@ -3,6 +3,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Dashboard } from "./pages/Dashboard";
 import { GenerationResult } from "./pages/GenerationResult";
 import { Authenticate } from "./auth/Authenticate";
+import { Plans } from "./pages/Plans";
 
 function App() {
   return (
@@ -18,6 +19,14 @@ function App() {
           }
         />
         <Route path="/generation/:id" element={<GenerationResult />} />
+        <Route
+          path="/plans"
+          element={
+            <ProtectedRoute>
+              <Plans />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

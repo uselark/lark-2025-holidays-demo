@@ -1,4 +1,5 @@
 import { LarkClient } from "lark-billing";
+import { isOverageAllowedForRateCardId } from "./paywallPlans";
 
 const lark = new LarkClient({
   apiKey: import.meta.env.VITE_LARK_PUBLIC_API_KEY,
@@ -8,6 +9,7 @@ export type BillingState = {
   subscriptionId: string;
   subscribedRateCardId: string;
   creditsRemaining: number;
+  overageAllowed: boolean;
 };
 export async function getBillingState({
   subjectId,
@@ -34,11 +36,13 @@ export async function getBillingState({
 
     const includedCredits = billingState.usage_data[0].included_units;
     const usedCredits = parseInt(billingState.usage_data[0].used_units);
+    const overageAllowed = isOverageAllowedForRateCardId(subscribedRateCardId);
 
     return {
       subscriptionId,
       subscribedRateCardId,
       creditsRemaining: includedCredits - usedCredits,
+      overageAllowed,
     };
   } catch (err) {
     console.error("Error fetching billing state:", err);

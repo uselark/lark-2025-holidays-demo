@@ -1,5 +1,5 @@
 from typing import Literal
-from lark import Lark
+from lark import CheckoutCallback, Lark
 from lark.core.api_error import ApiError as LarkApiError
 import os
 from dotenv import load_dotenv
@@ -65,3 +65,33 @@ class BillingManager:
                 "value": usage,
             },
         )
+
+    def update_subscription(
+        self,
+        subscription_id: str,
+        new_rate_card_id: str,
+        checkout_success_callback_url: str,
+        checkout_cancel_callback_url: str,
+    ):
+        response = self.lark.subscriptions.change_subscription_rate_card(
+            subscription_id=subscription_id,
+            rate_card_id=new_rate_card_id,
+            upgrade_behavior="rate_difference",
+            checkout_callback_urls=CheckoutCallback(
+                success_url=checkout_success_callback_url,
+                cancelled_url=checkout_cancel_callback_url,
+            ),
+        )
+
+        if response.result.type == "requires_action":
+            return UpdateSubscriptionResponse(
+                type="checkout_action_required",
+                checkout_url=response.result.action.checkout_url,
+            )
+        elif response.result.type == "success":
+            return UpdateSubscriptionResponse(
+                type="success",
+                checkout_url=None,
+            )
+        else:
+            raise ValueError(f"Unexpected response type: {response.result.type}")

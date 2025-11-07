@@ -152,3 +152,24 @@ async def get_company_characters(
         generation_id
     )
     return company_characters
+
+
+class UpdateSubscriptionRequest(BaseModel):
+    subscription_id: str
+    new_rate_card_id: str
+    checkout_success_callback_url: str
+    checkout_cancel_callback_url: str
+
+
+@app.post("/api/update_subscription", response_model=UpdateSubscriptionResponse)
+async def update_subscription(
+    update_subscription_request: UpdateSubscriptionRequest,
+    session: AuthenticateResponse = Depends(verify_session_token),
+):
+    update_subscription_response = billing_manager.update_subscription(
+        subscription_id=update_subscription_request.subscription_id,
+        new_rate_card_id=update_subscription_request.new_rate_card_id,
+        checkout_success_callback_url=update_subscription_request.checkout_success_callback_url,
+        checkout_cancel_callback_url=update_subscription_request.checkout_cancel_callback_url,
+    )
+    return update_subscription_response

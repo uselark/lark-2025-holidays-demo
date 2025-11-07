@@ -4,15 +4,35 @@ import { CharacterGenerator } from "../components/CharacterGenerator";
 import { BillingState } from "../billing/larkClient";
 import { useEffect, useState } from "react";
 import { useBillingManager } from "../billing/useBillingManager";
+import { Navigate, Link } from "react-router-dom";
 
 const BillingSubText = ({ billingState }: { billingState: BillingState }) => {
   const remainingCredits = billingState.creditsRemaining;
+  const overageAllowed = billingState.overageAllowed;
 
   const remainingCreditsText = `${remainingCredits} credit${
     remainingCredits === 1 ? "" : "s"
   } remaining.`;
 
-  return remainingCreditsText;
+  return (
+    <p className="text-gray-500 text-center">
+      {remainingCreditsText}{" "}
+      {overageAllowed ? (
+        "You'll be charged a fixed fee per character generation after you use up all your credits."
+      ) : (
+        <>
+          You can always{" "}
+          <Link
+            to="/plans"
+            className="text-blue-600 hover:text-blue-700 underline"
+          >
+            upgrade
+          </Link>{" "}
+          plan to get more credits.
+        </>
+      )}
+    </p>
+  );
 };
 
 export function CharacterGeneratorWrapper({
@@ -20,10 +40,11 @@ export function CharacterGeneratorWrapper({
 }: {
   billingState: BillingState;
 }) {
-  const isAllowedToUse = billingState.creditsRemaining > 0;
+  const isAllowedToUse =
+    billingState.creditsRemaining > 0 || billingState.overageAllowed;
 
   if (!isAllowedToUse) {
-    return "You're out of monthly credits so can't use the product anymore for now.";
+    return <Navigate to="/plans" />;
   }
 
   return (

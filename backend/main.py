@@ -9,6 +9,7 @@ from typing import Optional
 from stytch import Client
 from stytch.consumer.models.sessions import AuthenticateResponse
 from stytch.core.response_base import StytchError
+from billing.billing_manager import BillingManager, UpdateSubscriptionResponse
 from character_generator import CharacterGenerator, CompanyCharacterInfo
 
 # Load environment variables from .env file
@@ -38,6 +39,7 @@ stytch_client = Client(
 )
 
 character_generator = CharacterGenerator()
+billing_manager = BillingManager()
 
 
 # Authentication dependency
@@ -99,8 +101,10 @@ async def create_customer(
         else None
     )
 
-    print(
-        f"Would have created customer with details: {stytch_user_id}, email: {user_email}, name: {user_name}"
+    billing_manager.potentially_create_free_plan_billing_customer(
+        subject_external_id=stytch_user_id,
+        name=user_name,
+        email=user_email,
     )
     return stytch_user_id
 
@@ -122,12 +126,20 @@ class CompanyCharacterRequest(BaseModel):
 
 @app.post("/api/company_characters", response_model=CompanyCharacterInfo)
 async def generate_company_characters(
-    request: CompanyCharacterRequest,
+    company_request: CompanyCharacterRequest,
+    request: Request,
     session: AuthenticateResponse = Depends(verify_session_token),
-):
-
+) -> CompanyCharacterInfo:
     company_characters = await character_generator.generate_characters_for_company(
-        request.company_url
+        company_request.company_url
+    )
+
+    request_id = request.headers.get("X-Request-ID")
+    assert request_id is not None
+    billing_manager.report_usage(
+        subject_external_id=session.user.user_id,
+        usage=1,
+        idempotency_key=request_id,
     )
     return company_characters
 

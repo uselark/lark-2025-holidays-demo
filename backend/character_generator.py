@@ -146,7 +146,7 @@ class CharacterGenerator:
             characters=(List[CompanyCharacterInternal], ...),
         )
 
-    def _create_character_name_enum(self) -> Type[Enum]:
+    def _create_character_name_enum(self) -> Enum:
         """Create a dynamic Enum with all character names."""
         character_names = [char.name for char in self.character_list]
         # Create enum with name as both the key and value

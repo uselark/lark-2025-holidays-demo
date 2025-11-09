@@ -1,8 +1,14 @@
 import asyncio
 from firecrawl import AsyncFirecrawl
 from pydantic import BaseModel
+from dotenv import load_dotenv
+import os
 
-app = AsyncFirecrawl(api_key="fc-62dc4d86d1494082be4426ebbc35c453")
+load_dotenv()
+FIRECRAWL_API_KEY = os.getenv("FIRECRAWL_API_KEY")
+assert FIRECRAWL_API_KEY is not None
+
+app = AsyncFirecrawl(api_key=FIRECRAWL_API_KEY)
 
 
 class YCCompanyInfo(BaseModel):

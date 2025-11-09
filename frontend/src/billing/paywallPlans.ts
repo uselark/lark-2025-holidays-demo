@@ -7,9 +7,18 @@ export interface PricingPlan {
   features: string[];
 }
 
+const FREE_PLAN_RATE_CARD_ID =
+  import.meta.env.VITE_FREE_PLAN_RATE_CARD_ID || "rc_yFSBwgtdxdcuezEMSnIvggBV";
+const STARTER_PLAN_RATE_CARD_ID =
+  import.meta.env.VITE_STARTER_PLAN_RATE_CARD_ID ||
+  "rc_bpZnNK1HYe717KiCLhl4X25c";
+const PREMIUM_PLAN_RATE_CARD_ID =
+  import.meta.env.VITE_PREMIUM_PLAN_RATE_CARD_ID ||
+  "rc_GxmptwUrUv5OzI1NdNYQpRNZ";
+
 export const plans: PricingPlan[] = [
   {
-    rateCardId: "rc_yFSBwgtdxdcuezEMSnIvggBV",
+    rateCardId: FREE_PLAN_RATE_CARD_ID,
     name: "Free",
     price: 0,
     description: "Perfect for trying out our AI character generator",
@@ -21,7 +30,7 @@ export const plans: PricingPlan[] = [
     ],
   },
   {
-    rateCardId: "rc_bpZnNK1HYe717KiCLhl4X25c",
+    rateCardId: STARTER_PLAN_RATE_CARD_ID,
     name: "Starter",
     price: 20,
     description: "Best for individ  uals and small projects",
@@ -33,7 +42,7 @@ export const plans: PricingPlan[] = [
     ],
   },
   {
-    rateCardId: "rc_GxmptwUrUv5OzI1NdNYQpRNZ",
+    rateCardId: PREMIUM_PLAN_RATE_CARD_ID,
     name: "Premium",
     price: 100,
     description: "Unlimited power for professionals and teams",

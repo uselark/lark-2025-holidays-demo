@@ -1,8 +1,12 @@
 import { LarkClient } from "lark-billing";
 import { isOverageAllowedForRateCardId } from "./paywallPlans";
 
+const LARK_PUBLIC_API_KEY = import.meta.env.VITE_LARK_PUBLIC_API_KEY;
+const LARK_BASE_URL = import.meta.env.VITE_LARK_BASE_URL;
+
 const lark = new LarkClient({
-  apiKey: import.meta.env.VITE_LARK_PUBLIC_API_KEY,
+  apiKey: LARK_PUBLIC_API_KEY,
+  baseUrl: LARK_BASE_URL ?? undefined,
 });
 
 export type BillingState = {

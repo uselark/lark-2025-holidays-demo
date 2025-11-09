@@ -1,3 +1,4 @@
+import uuid
 from lark import (
     Amount,
     CreateFixedRateRequest,
@@ -14,8 +15,12 @@ load_dotenv()
 LARK_API_KEY = os.getenv("LARK_API_KEY")
 assert LARK_API_KEY is not None
 
+LARK_BASE_URL = os.getenv("LARK_BASE_URL")
+assert LARK_BASE_URL is not None
+
 lark = Lark(
     api_key=LARK_API_KEY,
+    base_url=LARK_BASE_URL if LARK_BASE_URL else None,
 )
 
 
@@ -28,7 +33,7 @@ class LarkPricingPlanGenerator:
         # This helps us track usage and bill for it
         pricing_metric = lark.pricing_metrics.create_pricing_metric(
             name="Character Generation",
-            event_name=f"character_generation",
+            event_name=f"character_generation_{uuid.uuid4().hex}",
             aggregation=PricingMetricAggregation_Sum(value_field="value"),
             unit="character generations",
         )

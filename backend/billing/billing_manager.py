@@ -7,9 +7,15 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-PRICING_METRIC_EVENT_NAME = "character_generation"
-FREE_PLAN_RATE_CARD_ID = "rc_yFSBwgtdxdcuezEMSnIvggBV"
+PRICING_METRIC_EVENT_NAME = (
+    os.getenv("PRICING_METRIC_EVENT_NAME") or "character_generation"
+)
+FREE_PLAN_RATE_CARD_ID = (
+    os.getenv("FREE_PLAN_RATE_CARD_ID") or "rc_yFSBwgtdxdcuezEMSnIvggBV"
+)
 
+
+LARK_BASE_URL = os.getenv("LARK_BASE_URL")
 LARK_API_KEY = os.getenv("LARK_API_KEY")
 
 
@@ -23,6 +29,7 @@ class BillingManager:
         assert LARK_API_KEY is not None
         self.lark = Lark(
             api_key=LARK_API_KEY,
+            base_url=LARK_BASE_URL if LARK_BASE_URL else None,
         )
 
     def potentially_create_free_plan_billing_customer(

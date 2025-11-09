@@ -11,9 +11,9 @@ function getPaywallSubText({
   billingState: BillingState;
 }): string {
   if (billingState.creditsRemaining > 0 || billingState.overageAllowed) {
-    return "Choose the plan that best fits your needs";
+    return "Choose the plan that best fits your needs.";
   } else {
-    return "You're out of credits. Please upgrade to continue.";
+    return "You're out of credits. Please upgrade to continue. ";
   }
 }
 
@@ -165,6 +165,18 @@ export function Paywall({
               <h1 className="text-5xl font-bold text-gray-900 mb-4">Pricing</h1>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
                 {getPaywallSubText({ billingState })}
+              </p>
+              <p className="text-gray-600 text-sm">
+                You'll use fake money (via{" "}
+                <a
+                  href="https://docs.stripe.com/testing#testing-interactively"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-700 underline"
+                >
+                  test cards
+                </a>
+                ) to pay for the plans.
               </p>
             </div>
 

@@ -120,7 +120,7 @@ class CharacterGenerator:
         CompanyCharactersInternal = self._create_company_characters_internal_model()
 
         response = await client.responses.parse(
-            model="gpt-5-nano",
+            model="gpt-4.1-nano",
             input=self._make_prompt_message(company_info),
             text_format=CompanyCharactersInternal,
         )

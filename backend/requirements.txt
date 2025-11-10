@@ -9,3 +9,5 @@ lark-billing==0.1.4
 asgi-correlation-id==4.3.4
 gunicorn==21.2.0
 python-dotenv==1.0.0
+beautifulsoup4==4.14.2
+httpx==0.28.1

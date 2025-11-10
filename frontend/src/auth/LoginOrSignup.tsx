@@ -36,7 +36,7 @@ export function LoginOrSignup() {
             Lark Thanksgiving 2025
           </h2>
           <p className="mt-2 text-center text-gray-600">
-            Sign in to turn founders into fun disney characters!
+            Sign in for a fun thanksgiving experience!
           </p>
         </div>
 

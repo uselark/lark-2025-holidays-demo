@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from openai import AsyncOpenAI
 from pydantic import BaseModel, create_model
 
-from website_scraper import WebsiteScraper
+from website_scraper import WebsiteScraper, YCCompanyInfo
 
 load_dotenv()
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -54,11 +54,17 @@ class CharacterGenerator:
     async def generate_characters_for_company(
         self, company_url: str
     ) -> CompanyCharacterInfo:
-        # Run website scraping and character assignment in parallel
-        company_info, company_characters_internal = await asyncio.gather(
-            self.website_scraper.extract_data(company_url),
-            self._assign_characters_to_founders(company_url),
+
+        company_info = await self.website_scraper.extract_data(company_url)
+        if company_info is None:
+            raise Exception("Failed to extract company information")
+
+        company_characters_internal = await self._assign_characters_to_founders(
+            company_info
         )
+
+        if company_info is None:
+            raise Exception("Failed to extract company information")
 
         company_characters_external = []
         for character in company_characters_internal.characters:
@@ -109,14 +115,13 @@ class CharacterGenerator:
             )
 
     async def _assign_characters_to_founders(
-        self, yc_company_url: str
+        self, company_info: YCCompanyInfo
     ) -> List[BaseModel]:
         CompanyCharactersInternal = self._create_company_characters_internal_model()
 
         response = await client.responses.parse(
-            model="gpt-5-mini",
-            tools=[{"type": "web_search"}],
-            input=self._make_prompt_message(yc_company_url),
+            model="gpt-5-nano",
+            input=self._make_prompt_message(company_info),
             text_format=CompanyCharactersInternal,
         )
         print("Company characters: ", response.output_parsed)
@@ -161,11 +166,11 @@ class CharacterGenerator:
         cleaned_text = re.sub(r"\ue200[^\ue201]*\ue201", "", text)
         return cleaned_text.strip()
 
-    def _make_prompt_message(self, yc_company_url: str) -> str:
+    def _make_prompt_message(self, company_info: YCCompanyInfo) -> str:
         return f"""
 You are a creative assistant that powers a fun thanksgiving game for founders.
 
-You're given a YC company URL that has information about the company and its founders. Use the web search tool to get this information. Then assign a disney character to each founder. When you assign a character to each founder, provide a short funny & spicy reasoning for your choice. Don't include chracter name in your reasoning. 
+You're given information about a YC company and its founders. Assign a disney character to each founder. When you assign a character to each founder, provide a short funny & spicy reasoning for your choice. Don't include chracter name in your reasoning. 
 
 Here are some guidelines for the character assignment:
 - The goal of this task is to ultimately generate a funny reasoning for each character assignment, and not to pick the closest matching character based on company information. The character assignment can be based on the company information or be somewhat random (to increase the fun factor). 
@@ -175,4 +180,8 @@ Here are some guidelines for the character assignment:
 
 Don't include any citations in your response since this is fun game.
 
-Here is the YC company url: {yc_company_url}"""
+Here is the company information: 
+
+{company_info.model_dump_json(exclude={"company_small_logo_url"})}
+
+"""

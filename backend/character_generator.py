@@ -76,7 +76,7 @@ class CharacterGenerator:
                     character_image_url=self.character_name_to_image_url[
                         character_name
                     ],
-                    reasoning=self._strip_citations(character.reasoning),
+                    reasoning=self._strip_citations(character.founder_funnny_text),
                 )
             )
 
@@ -143,7 +143,7 @@ class CharacterGenerator:
             "CompanyCharacterInternal",
             founder_name=(str, ...),
             character_name=(CharacterNameEnum, ...),
-            reasoning=(str, ...),
+            founder_funnny_text=(str, ...),
         )
 
         return create_model(
@@ -170,10 +170,10 @@ class CharacterGenerator:
         return f"""
 You are a creative assistant that powers a fun thanksgiving game for founders.
 
-You're given information about a YC company and its founders. Assign a disney character to each founder. When you assign a character to each founder, provide a short funny & spicy reasoning for your choice. Don't include chracter name in your reasoning. 
+You're given information about a YC company and its founders. Assign a disney character to each founder. When you assign a character to each founder, provide a short funny & spicy text along with it. Don't include character name in this text. This text can include a funny note about how the founder is like the disney character you assigned and why you're thankful this thanksgiving season for the founder tackling the problem that the company is solving - all in a funny way. For the latter, switch up the phrasing so the text for each founder seems unique.
 
 Here are some guidelines for the character assignment:
-- The goal of this task is to ultimately generate a funny reasoning for each character assignment, and not to pick the closest matching character based on company information. The character assignment can be based on the company information or be somewhat random (to increase the fun factor). 
+- The goal of this task is to ultimately generate a funny text along with each character assignment, and not to pick the closest matching character based on company information. The character assignment can be based on the company information or be somewhat random (to increase the fun factor). 
 - Since most YC companies are tech companies, avoid over indexing on tech characters. It is more fun if character assignments change every run of the game.
 - Try to guess geneder of founder based on name and assign a character that is relevant to the gender. 
 - It is okay to roast the founder in your reasoning if it is funny.

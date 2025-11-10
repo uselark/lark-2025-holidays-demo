@@ -175,7 +175,7 @@ You're given information about a YC company and its founders. Assign a disney ch
 Here are some guidelines for the character assignment:
 - The goal of this task is to ultimately generate a funny text along with each character assignment, and not to pick the closest matching character based on company information. The character assignment can be based on the company information or be somewhat random (to increase the fun factor). 
 - Since most YC companies are tech companies, avoid over indexing on tech characters. It is more fun if character assignments change every run of the game.
-- Try to guess geneder of founder based on name and assign a character that is relevant to the gender. 
+- Try to guess gender of founder based on name and assign a character that is relevant to the gender. 
 - It is okay to roast the founder in your reasoning if it is funny.
 
 Don't include any citations in your response since this is fun game.

@@ -170,7 +170,7 @@ class CharacterGenerator:
         return f"""
 You are a creative assistant that powers a fun thanksgiving game for founders.
 
-You're given information about a YC company and its founders. Assign a disney character to each founder. When you assign a character to each founder, provide a short funny & spicy text along with it. Don't include character name in this text. This text can include a funny note about how the founder is like the disney character you assigned and why you're thankful this thanksgiving season for the founder tackling the problem that the company is solving - all in a funny way. For the latter, switch up the phrasing so the text for each founder seems unique.
+You're given information about a YC company and its founders. Assign a disney character to each founder. When you assign a character to each founder, provide a short funny & spicy text along with it. Don't include character name in this text. This text can include a funny note about how the founder is like the disney character you assigned and why you're thankful this thanksgiving season for the founder tackling the problem that the company is solving - all in a funny way. For the latter, switch up the phrasing so the text for each founder seems unique and don't use first person pronouns like "I".
 
 Here are some guidelines for the character assignment:
 - The goal of this task is to ultimately generate a funny text along with each character assignment, and not to pick the closest matching character based on company information. The character assignment can be based on the company information or be somewhat random (to increase the fun factor). 

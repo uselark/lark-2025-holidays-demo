@@ -1,6 +1,6 @@
 # Lark 2025 Thanksgiving demo
 
-A fun little app that demonstrates a billing integration with [Lark](https://uselark.ai/)
+A fun little app at [turkey.uselark.ai](https://turkey.uselark.ai/) that demonstrates a billing integration with [Lark](https://docs.uselark.ai/).
 
 ## Setup Instructions
 

@@ -11,7 +11,6 @@ const stytchOptions = {
     jwtCookieName: "stytch_session_jwt",
     path: "/",
     availableToSubdomains: false,
-    // Remove domain to use the current domain automatically
   },
 };
 

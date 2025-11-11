@@ -11,7 +11,7 @@ PRICING_METRIC_EVENT_NAME = (
     os.getenv("PRICING_METRIC_EVENT_NAME") or "character_generation"
 )
 FREE_PLAN_RATE_CARD_ID = (
-    os.getenv("FREE_PLAN_RATE_CARD_ID") or "rc_yFSBwgtdxdcuezEMSnIvggBV"
+    os.getenv("FREE_PLAN_RATE_CARD_ID") or "rc_boNfcQ2JRwzRZCil5oMneaCB"
 )
 
 

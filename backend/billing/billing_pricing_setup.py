@@ -16,7 +16,6 @@ LARK_API_KEY = os.getenv("LARK_API_KEY")
 assert LARK_API_KEY is not None
 
 LARK_BASE_URL = os.getenv("LARK_BASE_URL")
-assert LARK_BASE_URL is not None
 
 lark = Lark(
     api_key=LARK_API_KEY,

@@ -1,12 +1,12 @@
-import { LarkClient } from "lark-billing";
+import Lark from "lark-billing";
 import { isOverageAllowedForRateCardId } from "./paywallPlans";
 
 const LARK_PUBLIC_API_KEY = import.meta.env.VITE_LARK_PUBLIC_API_KEY;
 const LARK_BASE_URL = import.meta.env.VITE_LARK_BASE_URL;
 
-const lark = new LarkClient({
+const lark = new Lark({
   apiKey: LARK_PUBLIC_API_KEY,
-  baseUrl: LARK_BASE_URL ?? undefined,
+  baseURL: LARK_BASE_URL ?? undefined,
 });
 
 export type BillingState = {
@@ -21,7 +21,9 @@ export async function getBillingState({
   subjectId: string;
 }): Promise<BillingState> {
   try {
-    const billingState = await lark.customerAccess.getBillingState(subjectId);
+    const billingState = await lark.customerAccess.retrieveBillingState(
+      subjectId
+    );
 
     if (billingState.active_subscriptions.length !== 1) {
       throw new Error(

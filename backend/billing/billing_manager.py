@@ -1,8 +1,8 @@
 from typing import Literal
-from lark import CheckoutCallback, Lark
-from lark.core.api_error import ApiError as LarkApiError
+from lark import APIStatusError, Lark, LarkError
 import os
 from dotenv import load_dotenv
+from lark.types import CheckoutCallbackParam
 from pydantic import BaseModel
 
 load_dotenv()
@@ -36,26 +36,30 @@ class BillingManager:
         self, subject_external_id: str, name: str | None, email: str | None
     ):
         try:
-            subject = self.lark.subjects.get_subject(subject_id=subject_external_id)
+            subject = self.lark.subjects.retrieve(subject_id=subject_external_id)
             print(
                 f"Subject already exists: {subject.id} for external id: {subject_external_id}"
             )
 
             return
-        except LarkApiError as e:
+        except APIStatusError as e:
             if e.status_code != 404:
                 raise e
             # eat yup 404 and continue creating subject below
 
-        subject = self.lark.subjects.create_subject(
+        subject = self.lark.subjects.create(
             external_id=subject_external_id,
             name=name,
             email=email,
         )
 
-        self.lark.subscriptions.create_subscription(
+        self.lark.subscriptions.create(
             subject_id=subject.id,
             rate_card_id=FREE_PLAN_RATE_CARD_ID,
+            checkout_callback_urls=CheckoutCallbackParam(
+                success_url="https://turkey.uselark.ai/",
+                cancelled_url="https://turkey.uselark.ai/",
+            ),
         )
 
     def report_usage(
@@ -64,7 +68,7 @@ class BillingManager:
         usage: int,
         idempotency_key: str,
     ):
-        self.lark.usage_events.create_usage_event(
+        self.lark.usage_events.create(
             idempotency_key=idempotency_key,
             subject_id=subject_external_id,
             event_name=PRICING_METRIC_EVENT_NAME,
@@ -80,11 +84,11 @@ class BillingManager:
         checkout_success_callback_url: str,
         checkout_cancel_callback_url: str,
     ):
-        response = self.lark.subscriptions.change_subscription_rate_card(
+        response = self.lark.subscriptions.change_rate_card(
             subscription_id=subscription_id,
             rate_card_id=new_rate_card_id,
             upgrade_behavior="rate_difference",
-            checkout_callback_urls=CheckoutCallback(
+            checkout_callback_urls=CheckoutCallbackParam(
                 success_url=checkout_success_callback_url,
                 cancelled_url=checkout_cancel_callback_url,
             ),
@@ -104,10 +108,8 @@ class BillingManager:
             raise ValueError(f"Unexpected response type: {response.result.type}")
 
     def create_customer_portal_session(self, subject_external_id: str, return_url: str):
-        customer_portal_session = (
-            self.lark.customer_portal.create_customer_portal_session(
-                subject_id=subject_external_id,
-                return_url=return_url,
-            )
+        customer_portal_session = self.lark.customer_portal.create_session(
+            subject_id=subject_external_id,
+            return_url=return_url,
         )
         return customer_portal_session.url

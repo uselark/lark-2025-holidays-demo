@@ -1,5 +1,5 @@
 from typing import Literal
-from lark import APIStatusError, Lark, LarkError
+from lark import APIStatusError, Lark
 import os
 from dotenv import load_dotenv
 from lark.types import CheckoutCallbackParam
@@ -29,7 +29,7 @@ class BillingManager:
         assert LARK_API_KEY is not None
         self.lark = Lark(
             api_key=LARK_API_KEY,
-            base_url=LARK_BASE_URL if LARK_BASE_URL else None,
+            base_url=LARK_BASE_URL if LARK_BASE_URL else "https://api.uselark.ai",
         )
 
     def potentially_create_free_plan_billing_customer(

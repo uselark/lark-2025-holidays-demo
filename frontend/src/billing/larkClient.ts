@@ -6,7 +6,7 @@ const LARK_BASE_URL = import.meta.env.VITE_LARK_BASE_URL;
 
 const lark = new Lark({
   apiKey: LARK_PUBLIC_API_KEY,
-  baseURL: LARK_BASE_URL ?? "https://api.uselark.ai",
+  baseURL: LARK_BASE_URL ?? undefined,
 });
 
 export type BillingState = {

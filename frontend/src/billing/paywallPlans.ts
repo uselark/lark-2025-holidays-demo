@@ -56,7 +56,7 @@ export const plans: PricingPlan[] = [
 ];
 
 export function isOverageAllowedForRateCardId(rateCardId: string): boolean {
-  return rateCardId === "rc_kpB7YTPyQRiOoix0fjusp55E";
+  return rateCardId === PREMIUM_PLAN_RATE_CARD_ID;
 }
 
 export function getPricingPlanForRateCardId(rateCardId: string): PricingPlan {

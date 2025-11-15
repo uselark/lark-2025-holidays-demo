@@ -5,6 +5,20 @@ import "./index.css";
 import { StytchProvider } from "@stytch/react";
 import { StytchUIClient } from "@stytch/vanilla-js";
 
+// Set favicon and title based on app mode
+const APP_MODE = import.meta.env.VITE_APP_MODE;
+const faviconPath = APP_MODE === "vibes" ? "/fire.svg" : "/turkey.svg";
+const pageTitle = APP_MODE === "vibes" ? "Vibes AI" : "Lark Thanksgiving 2025";
+
+// Update favicon
+const faviconLink = document.getElementById("favicon") as HTMLLinkElement;
+if (faviconLink) {
+  faviconLink.href = faviconPath;
+}
+
+// Update page title
+document.title = pageTitle;
+
 const stytchOptions = {
   cookieOptions: {
     opaqueTokenCookieName: "stytch_session",

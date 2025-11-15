@@ -2,6 +2,8 @@ import { StytchLogin } from "@stytch/react";
 import { OAuthProviders, Products } from "@stytch/vanilla-js";
 import { Footer } from "../components/Footer";
 
+const APP_MODE = import.meta.env.VITE_APP_MODE;
+
 export function LoginOrSignup() {
   const config = {
     products: [Products.oauth],
@@ -32,12 +34,27 @@ export function LoginOrSignup() {
       <main className="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 flex items-center justify-center gap-3">
-            <img src="/turkey.svg" alt="Turkey" className="w-10 h-10" />
-            Lark Thanksgiving 2025
+            {APP_MODE === "vibes" ? (
+              <>
+                <img src="/fire.svg" alt="Fire" className="w-10 h-10" />
+                Vibes AI
+              </>
+            ) : (
+              <>
+                <img src="/turkey.svg" alt="Turkey" className="w-10 h-10" />
+                Lark Thanksgiving 2025
+              </>
+            )}
           </h2>
-          <p className="mt-2 text-center text-gray-600">
-            Sign in for a fun thanksgiving experience!
-          </p>
+          {APP_MODE === "vibes" ? (
+            <p className="mt-2 text-center text-gray-600">
+              Sign in for some vibes!
+            </p>
+          ) : (
+            <p className="mt-2 text-center text-gray-600">
+              Sign in for a fun thanksgiving experience!
+            </p>
+          )}
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">

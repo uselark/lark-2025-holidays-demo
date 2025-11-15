@@ -1,6 +1,6 @@
 // Base API URL constant
 const API_BASE_URL = import.meta.env.VITE_API_URL;
-
+const APP_MODE = import.meta.env.VITE_APP_MODE;
 // Types
 export interface CompanyCharacter {
   founder_name: string;
@@ -9,12 +9,25 @@ export interface CompanyCharacter {
   reasoning: string;
 }
 
-export interface CompanyCharacterInfo {
+export type CompanyCharacterInfo =
+  | YcCompanyCharacterInfo
+  | CompanyVibesCharacterInfo;
+export interface YcCompanyCharacterInfo {
+  type: "yc_company";
   id: string;
   company_name: string;
   company_yc_url: string;
   company_logo_url: string;
   characters: CompanyCharacter[];
+}
+
+export interface CompanyVibesCharacterInfo {
+  type: "company_vibes";
+  id: string;
+  company_name: string;
+  character_name: string;
+  character_image_url: string;
+  reasoning: string;
 }
 
 // API functions
@@ -30,6 +43,7 @@ export const generateCompanyCharacters = async (
     },
     body: JSON.stringify({
       company_url: companyUrl,
+      mode: APP_MODE === "vibes" ? "any_url" : "yc_company",
     }),
   });
 
@@ -40,7 +54,18 @@ export const generateCompanyCharacters = async (
     );
   }
 
-  return response.json();
+  const jsonResponse = await response.json();
+  if (APP_MODE === "vibes") {
+    return {
+      ...jsonResponse,
+      type: "company_vibes",
+    } as CompanyVibesCharacterInfo;
+  } else {
+    return {
+      ...jsonResponse,
+      type: "yc_company",
+    } as YcCompanyCharacterInfo;
+  }
 };
 
 export const getCompanyCharacters = async (
@@ -57,7 +82,18 @@ export const getCompanyCharacters = async (
     );
   }
 
-  return response.json();
+  const jsonResponse = await response.json();
+  if (APP_MODE === "vibes") {
+    return {
+      ...jsonResponse,
+      type: "company_vibes",
+    } as CompanyVibesCharacterInfo;
+  } else {
+    return {
+      ...jsonResponse,
+      type: "yc_company",
+    } as YcCompanyCharacterInfo;
+  }
 };
 
 export const getOrCreateCustomer = async ({

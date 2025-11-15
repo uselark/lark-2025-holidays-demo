@@ -1,9 +1,9 @@
-import { CompanyCharacterInfo } from "../api/api";
+import { YcCompanyCharacterInfo } from "../api/api";
 
 export function CompanyResult({
   companyCharacterInfo,
 }: {
-  companyCharacterInfo: CompanyCharacterInfo;
+  companyCharacterInfo: YcCompanyCharacterInfo;
 }) {
   return (
     <div className="w-full max-w-7xl mx-auto px-6 py-8">

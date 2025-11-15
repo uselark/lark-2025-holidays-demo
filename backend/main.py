@@ -1,16 +1,21 @@
 import os
 import re
+from urllib.parse import urlparse
 from asgi_correlation_id import CorrelationIdMiddleware
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Depends, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, field_validator
-from typing import Optional
+from pydantic import BaseModel, field_validator, model_validator
+from typing import Literal, Optional
 from stytch import Client
 from stytch.consumer.models.sessions import AuthenticateResponse
 from stytch.core.response_base import StytchError
 from billing.billing_manager import BillingManager, UpdateSubscriptionResponse
-from character_generator import CharacterGenerator, CompanyCharacterInfo
+from character_generator import (
+    CharacterGenerator,
+    CompanyCharacterInfo,
+    CompanyVibesCharacterInfo,
+)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -118,27 +123,47 @@ async def create_customer(
 
 class CompanyCharacterRequest(BaseModel):
     company_url: str
+    mode: Literal["yc_company", "any_url"]
 
-    @field_validator("company_url")
-    @classmethod
-    def validate_yc_url(cls, yc_company_url: str) -> str:
-        """Validate that the URL matches the Y Combinator companies format."""
-        pattern = r"^https://www\.ycombinator\.com/companies/[a-zA-Z0-9\-]+$"
-        if not re.match(pattern, yc_company_url):
-            raise ValueError(
-                "URL must match the format: https://www.ycombinator.com/companies/{company_name}"
-            )
-        return yc_company_url
+    @model_validator(mode="after")
+    def validate_url(self):
+        """Validate the URL based on the mode."""
+        if self.mode == "yc_company":
+            # Validate Y Combinator companies format
+            pattern = r"^https://www\.ycombinator\.com/companies/[a-zA-Z0-9\-]+$"
+            if not re.match(pattern, self.company_url):
+                raise ValueError(
+                    "URL must match the format: https://www.ycombinator.com/companies/{company_name}"
+                )
+        else:
+            # Validate general URL format
+            try:
+                result = urlparse(self.company_url)
+                # Check that URL has a scheme (http/https) and a network location (domain)
+                if not all([result.scheme, result.netloc]):
+                    raise ValueError(
+                        "Invalid URL format. URL must include scheme (http/https) and domain"
+                    )
+                if result.scheme not in ["http", "https"]:
+                    raise ValueError("URL scheme must be http or https")
+            except Exception as e:
+                raise ValueError(f"Invalid URL: {str(e)}")
+
+        return self
 
 
-@app.post("/api/company_characters", response_model=CompanyCharacterInfo)
+@app.post(
+    "/api/company_characters",
+    response_model=CompanyCharacterInfo | CompanyVibesCharacterInfo,
+)
 async def generate_company_characters(
     company_request: CompanyCharacterRequest,
     request: Request,
     session: AuthenticateResponse = Depends(verify_session_token),
-) -> CompanyCharacterInfo:
+) -> CompanyCharacterInfo | CompanyVibesCharacterInfo:
     company_characters = await character_generator.generate_characters_for_company(
-        company_request.company_url
+        company_request.company_url,
+        company_request.mode,
     )
 
     request_id = request.headers.get("X-Request-ID")
@@ -151,10 +176,13 @@ async def generate_company_characters(
     return company_characters
 
 
-@app.get("/api/company_characters/{generation_id}", response_model=CompanyCharacterInfo)
+@app.get(
+    "/api/company_characters/{generation_id}",
+    response_model=CompanyCharacterInfo | CompanyVibesCharacterInfo,
+)
 async def get_company_characters(
     generation_id: str,
-) -> CompanyCharacterInfo:
+) -> CompanyCharacterInfo | CompanyVibesCharacterInfo:
     company_characters = await character_generator.get_character_generation(
         generation_id
     )

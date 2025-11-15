@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useStytch } from "@stytch/react";
 import { generateCompanyCharacters } from "../api/api";
 
+const APP_MODE = import.meta.env.VITE_APP_MODE;
+
 const loadingMessages = [
   "Generating disney characters (can take upto 30 seconds)...",
   "AI agents are hard at work...",
@@ -35,17 +37,23 @@ export function CharacterGenerator({ subText }: { subText: React.ReactNode }) {
     }
   }, [isLoading]);
 
-  const validateYCUrl = (url: string): boolean => {
+  const validateUrl = (url: string): boolean => {
     const ycUrlPattern =
       /^https:\/\/www\.ycombinator\.com\/companies\/[a-zA-Z0-9\-]+$/;
-    return ycUrlPattern.test(url);
+    const anyUrlPattern = /^https?:\/\/.+$/;
+    const pattern = APP_MODE === "vibes" ? anyUrlPattern : ycUrlPattern;
+    return pattern.test(url);
   };
 
   const handleSubmit = async () => {
-    if (!validateYCUrl(query)) {
+    if (!validateUrl(query)) {
+      const errorMessage =
+        APP_MODE === "vibes"
+          ? "Please enter a valid company URL"
+          : "Please enter a valid YC company URL";
       setError({
         type: "validation",
-        message: "Please enter a valid YC company URL",
+        message: errorMessage,
       });
       return;
     }
@@ -94,7 +102,9 @@ export function CharacterGenerator({ subText }: { subText: React.ReactNode }) {
   return (
     <div className="w-full max-w-2xl pt-[30vh]">
       <h2 className="text-4xl font-normal text-gray-900 text-center mb-12">
-        Enter a YC company URL
+        {APP_MODE === "vibes"
+          ? "Enter your company URL"
+          : "Enter a YC company URL"}
       </h2>
 
       {/* Input Container */}
@@ -103,7 +113,11 @@ export function CharacterGenerator({ subText }: { subText: React.ReactNode }) {
           type="text"
           value={query}
           onChange={(e) => handleInputChange(e.target.value)}
-          placeholder="https://www.ycombinator.com/companies/lark"
+          placeholder={
+            APP_MODE === "vibes"
+              ? "https://uselark.ai/"
+              : "https://www.ycombinator.com/companies/lark"
+          }
           className={`w-full px-6 py-4 pr-16 text-base text-gray-900 placeholder-gray-400 bg-white border rounded-2xl focus:outline-none focus:ring-2 focus:border-transparent ${
             error
               ? "border-red-300 focus:ring-red-300"

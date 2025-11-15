@@ -6,7 +6,7 @@ from enum import Enum
 import uuid
 from fastapi import HTTPException
 from upstash_redis import Redis
-from typing import List, Type
+from typing import List, Literal, Type
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 from pydantic import BaseModel, create_model
@@ -43,6 +43,14 @@ class CompanyCharacterInfo(BaseModel):
     characters: List[CompanyCharacterExternal]
 
 
+class CompanyVibesCharacterInfo(BaseModel):
+    id: str
+    company_name: str
+    character_name: str
+    character_image_url: str
+    reasoning: str
+
+
 class CharacterGenerator:
     def __init__(self):
         self.character_list: List[Character] = self._get_character_list()
@@ -52,14 +60,48 @@ class CharacterGenerator:
         }
 
     async def generate_characters_for_company(
+        self, company_url: str, mode: Literal["yc_company", "any_url"]
+    ) -> CompanyVibesCharacterInfo | CompanyCharacterInfo:
+        if mode == "yc_company":
+            return await self.generate_characters_for_yc_company(company_url)
+        elif mode == "any_url":
+            return await self.generate_characters_for_url(company_url)
+
+    async def generate_characters_for_url(
+        self, company_url: str
+    ) -> CompanyVibesCharacterInfo:
+        raw_text = await self.website_scraper.extract_general_url_data_using_http(
+            company_url
+        )
+        company_character_internal = await self._assign_characters_to_general_url(
+            company_url, raw_text
+        )
+
+        company_name = company_character_internal.company_name
+        character_name = company_character_internal.character_name.value
+        reasoning = company_character_internal.funnny_reasoning_text
+
+        company_vibes_character_info = CompanyVibesCharacterInfo(
+            id=uuid.uuid4().hex,
+            company_name=company_name,
+            character_name=character_name,
+            character_image_url=self.character_name_to_image_url[character_name],
+            reasoning=reasoning,
+        )
+        await self._persist_character_generation(company_vibes_character_info)
+        return company_vibes_character_info
+
+    async def generate_characters_for_yc_company(
         self, company_url: str
     ) -> CompanyCharacterInfo:
 
-        company_info = await self.website_scraper.extract_data(company_url)
+        company_info = await self.website_scraper.extract_yc_data_using_http(
+            company_url
+        )
         if company_info is None:
             raise Exception("Failed to extract company information")
 
-        company_characters_internal = await self._assign_characters_to_founders(
+        company_characters_internal = await self._assign_characters_to_yc_founders(
             company_info
         )
 
@@ -92,11 +134,11 @@ class CharacterGenerator:
 
     async def get_character_generation(
         self, generation_id: str
-    ) -> CompanyCharacterInfo:
+    ) -> CompanyCharacterInfo | CompanyVibesCharacterInfo:
         return await self._get_character_generation(generation_id)
 
     async def _persist_character_generation(
-        self, company_characters_info: CompanyCharacterInfo
+        self, company_characters_info: CompanyCharacterInfo | CompanyVibesCharacterInfo
     ):
         redis.set(
             company_characters_info.id,
@@ -105,23 +147,43 @@ class CharacterGenerator:
 
     async def _get_character_generation(
         self, generation_id: str
-    ) -> CompanyCharacterInfo:
+    ) -> CompanyCharacterInfo | CompanyVibesCharacterInfo:
         company_characters_info = redis.get(generation_id)
         if company_characters_info:
-            return CompanyCharacterInfo.model_validate_json(company_characters_info)
+            # Parse JSON to determine which type it is
+            data = json.loads(company_characters_info)
+            # CompanyCharacterInfo has 'characters' field, CompanyVibesCharacterInfo has 'character_name'
+            if "characters" in data:
+                return CompanyCharacterInfo.model_validate_json(company_characters_info)
+            else:
+                return CompanyVibesCharacterInfo.model_validate_json(
+                    company_characters_info
+                )
         else:
             raise HTTPException(
                 status_code=404, detail="Company character generation not found"
             )
 
-    async def _assign_characters_to_founders(
+    async def _assign_characters_to_general_url(
+        self, company_url: str, raw_text_from_url: str
+    ) -> List[BaseModel]:
+        CompanyCharacterInternal = self._create_url_character_internal_model()
+        response = await client.responses.parse(
+            model="gpt-4.1-nano",
+            input=self._make_general_url_prompt_message(company_url, raw_text_from_url),
+            text_format=CompanyCharacterInternal,
+        )
+        print("Company character for generic url: ", response.output_parsed)
+        return response.output_parsed
+
+    async def _assign_characters_to_yc_founders(
         self, company_info: YCCompanyInfo
     ) -> List[BaseModel]:
-        CompanyCharactersInternal = self._create_company_characters_internal_model()
+        CompanyCharactersInternal = self._create_founder_characters_internal_model()
 
         response = await client.responses.parse(
             model="gpt-4.1-nano",
-            input=self._make_prompt_message(company_info),
+            input=self._make_yc_prompt_message(company_info),
             text_format=CompanyCharactersInternal,
         )
         print("Company characters: ", response.output_parsed)
@@ -136,7 +198,17 @@ class CharacterGenerator:
 
         return characters
 
-    def _create_company_characters_internal_model(self) -> Type[BaseModel]:
+    def _create_url_character_internal_model(self) -> Type[BaseModel]:
+        CharacterNameEnum = self._create_character_name_enum()
+
+        return create_model(
+            "CompanyCharacterInternal",
+            company_name=(str, ...),
+            character_name=(CharacterNameEnum, ...),
+            funnny_reasoning_text=(str, ...),
+        )
+
+    def _create_founder_characters_internal_model(self) -> Type[BaseModel]:
         CharacterNameEnum = self._create_character_name_enum()
 
         CompanyCharacterInternal = create_model(
@@ -166,7 +238,31 @@ class CharacterGenerator:
         cleaned_text = re.sub(r"\ue200[^\ue201]*\ue201", "", text)
         return cleaned_text.strip()
 
-    def _make_prompt_message(self, company_info: YCCompanyInfo) -> str:
+    def _make_general_url_prompt_message(
+        self, company_url: str, raw_text_from_url: str
+    ) -> str:
+        return f"""
+You are a creative assistant that powers a fun game. You're given a url and text from that url and your goal is to extract the company name and assign a disney character to it with a funny & spicy reasoning for the character. The url will most likely be of a company website but sometimes it could be any random url.
+
+If it is a random url then try to pretend like it is a company website and still play along. 
+
+Don't include character name in the reasoning text. This text can include a funny note about how the company is like the disney character you assigned.
+
+Here are some guidelines for the character assignment:
+- The goal of this task is to ultimately generate a funny text along with character assignment, and not to pick the closest matching character based on company information. The character assignment can be based on the company information or be somewhat random (to increase the fun factor). 
+- It is common for the company url to be of a tech company, so avoid over indexing on tech characters. It is more fun if character assignments change every run of the game.
+- It is okay to roast in your reasoning if it is funny.
+
+Don't include any citations in your response since this is fun game.
+
+Here is the url: {company_url}
+
+Here is the text from the url: 
+
+{raw_text_from_url}
+"""
+
+    def _make_yc_prompt_message(self, company_info: YCCompanyInfo) -> str:
         return f"""
 You are a creative assistant that powers a fun thanksgiving game for founders.
 

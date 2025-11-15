@@ -22,10 +22,7 @@ class WebsiteScraper:
     def __init__(self):
         pass
 
-    async def extract_data(self, url: str) -> YCCompanyInfo | None:
-        return await self.extract_data_using_http(url)
-
-    async def extract_data_using_http(self, url: str) -> YCCompanyInfo | None:
+    async def extract_yc_data_using_http(self, url: str) -> YCCompanyInfo | None:
         async with httpx.AsyncClient() as client:
             response = await client.get(url)
             response.raise_for_status()
@@ -69,11 +66,29 @@ class WebsiteScraper:
                 raw_text=soup.get_text(strip=True),
             )
 
+    async def extract_general_url_data_using_http(self, url: str) -> str:
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url)
+                response.raise_for_status()
+                html_content = response.text
+
+                soup = BeautifulSoup(html_content, "html.parser")
+                text_content = soup.get_text(separator=" ", strip=True)
+
+                # Limit to 10k characters
+                return text_content[:10000]
+        except (httpx.HTTPStatusError, httpx.RequestError, Exception):
+            return "Could not extract text from url"
+
 
 async def run():
     website_scraper = WebsiteScraper()
-    company_info = await website_scraper.extract_data(
-        "https://www.ycombinator.com/companies/lark"
+    # company_info = await website_scraper.extract_yc_data_using_http(
+    #     "https://www.ycombinator.com/companies/lark"
+    # )
+    company_info = await website_scraper.extract_general_url_data_using_http(
+        "https://uselark.ai/"
     )
     print(company_info)
 

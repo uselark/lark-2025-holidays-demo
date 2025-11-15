@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { CompanyCharacterInfo, getCompanyCharacters } from "../api/api";
 import { Header } from "../components/Header";
 import { CompanyResult } from "../components/CompanyResult";
+import { CompanyVibesResult } from "../components/CompanyVibesResult";
 import { Footer } from "../components/Footer";
 import { useStytchSession } from "@stytch/react";
 
@@ -208,7 +209,11 @@ export function GenerationResult() {
         {isLoggedIn && <Header />}
         <main className="flex-1 flex flex-col items-center px-4">
           <div className="pt-10">
-            <CompanyResult companyCharacterInfo={companyCharacterInfo} />
+            {companyCharacterInfo.type === "company_vibes" ? (
+              <CompanyVibesResult companyCharacterInfo={companyCharacterInfo} />
+            ) : (
+              <CompanyResult companyCharacterInfo={companyCharacterInfo} />
+            )}
             <div className="flex justify-center items-center gap-3 mt-8 mb-8">
               <button
                 onClick={handleShareUrl}

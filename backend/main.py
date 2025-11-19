@@ -28,7 +28,7 @@ app = FastAPI(title="Lark Demo API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[DASHBOARD_URL],
+    allow_origins=[DASHBOARD_URL, "https://vibes.uselark.ai"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

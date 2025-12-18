@@ -8,13 +8,13 @@ export interface PricingPlan {
 }
 
 const FREE_PLAN_RATE_CARD_ID =
-  import.meta.env.VITE_FREE_PLAN_RATE_CARD_ID || "rc_boNfcQ2JRwzRZCil5oMneaCB";
+  import.meta.env.VITE_FREE_PLAN_RATE_CARD_ID || "rc_MRdNmrqTPTXZWiNINmj4YVAX";
 const STARTER_PLAN_RATE_CARD_ID =
   import.meta.env.VITE_STARTER_PLAN_RATE_CARD_ID ||
-  "rc_KY9r7ECBCY8ureNwozucoBLe";
+  "rc_7WpF3Yi69QGpgzrGdS3Uyggd";
 const PREMIUM_PLAN_RATE_CARD_ID =
   import.meta.env.VITE_PREMIUM_PLAN_RATE_CARD_ID ||
-  "rc_ESat2O4sTD5lCftH84I7OST4";
+  "rc_hSIYwdT1RBhELkIAR256qVW3";
 
 export const plans: PricingPlan[] = [
   {

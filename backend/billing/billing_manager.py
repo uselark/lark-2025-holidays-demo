@@ -11,7 +11,7 @@ PRICING_METRIC_EVENT_NAME = (
     os.getenv("PRICING_METRIC_EVENT_NAME") or "character_generation"
 )
 FREE_PLAN_RATE_CARD_ID = (
-    os.getenv("FREE_PLAN_RATE_CARD_ID") or "rc_boNfcQ2JRwzRZCil5oMneaCB"
+    os.getenv("FREE_PLAN_RATE_CARD_ID") or "rc_MRdNmrqTPTXZWiNINmj4YVAX"
 )
 
 
@@ -60,6 +60,7 @@ class BillingManager:
                 success_url="https://turkey.uselark.ai/",
                 cancelled_url="https://turkey.uselark.ai/",
             ),
+            fixed_rate_quantities={"base_rate": 1},
         )
 
     def report_usage(
